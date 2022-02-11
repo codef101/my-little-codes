@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript">
+      $.ajax({
+          url: 'https://syohn.com/wp-json/home_retail/get_data_from_database_information', // my php file
+          type: 'GET', // type of the HTTP request
+          success: function (result) {
+              //   var obj = jQuery.parseJSON(result);
+              console.log("result:", result);
+              result.map((item, index) => {
+                  var unit_symbol = item.property_address_UNIT1 ? "#" + item.property_address_UNIT1 : "";
+                  price_show_var = "";
+                  if (item.information_checkbox_12_sale_price_textarea) {
+                      price_show_var += "Sale Price $" + item.information_checkbox_12_sale_price_textarea;
+                  } else {
+                      price_show_var += item.Type_select_32_Broker_lease_textarea ? "lease price $" + item.Type_select_32_Broker_lease_textarea + " " + item.Type_select_32_Broker_lease + " " : "";
+                  }
+
+                  let images = item.file_upload_EXTERIOR_LANDSCAPING;
+                  var current_files = images.split(",");
+                  var Image_src = '';
+
+                    function isImage(filename) {
+                        var imageReg = /[\/.](svg|jpg|jpeg|tiff|png)$/i;
+                        return imageReg.test(filename)? true: false;
+                    }
+                    for (var i = 0; i < current_files.length; i++) {
+                        if (isImage(current_files[i])) {
+                            var Image_src = "https://syohn.com/wp-content/uploads/home_retail_database/" + current_files[0];
+                            break;
+                        }
+                    }
+                  // var Image_src = "https://ap.rdcpix.com/84955d2ca5211a01abd411c3358a12c7l-m2871947500od-w480_h360.jpg";
+                  document.getElementById("home_discover_container").innerHTML += "<a href='https://syohn.com/my-home-properties-detail/?home_id=" + item.home_id + "'><div class='home-discover-container-style'><img class='home-discover-image'  src='" + Image_src + "'><div class='home-description'><p class='home-address'>" + item.property_address_street_address1 + ", " + unit_symbol + "</p><p class='home-address'>" + item.property_address_city1 + " " + item.property_address_state1 + "," + item.property_address_zip_code1 + "</p><p class='home-address'>" + item.property_address_country_select + "</p><br/><p class='home-address-end'>" + price_show_var + "</p></div></div></a><div class='edit_button_style'><button onclick='go_edit_home(" + item.home_id + ")' class='edit_button_child_item'>VIEW</button><button onclick='go_delete_home(" + item.home_id + ")' class='edit_button_child_item'>Delete</button><button onclick='go_edit1_home(" + item.home_id + ")' class='edit_button_child_item'>Edit</button></div>";
+              })
+          }
+      });
+
+
+
+      function go_edit1_home(home_id){
+          window.location.href = "https://syohn.com/update-properties/?home_id="+home_id;
+      }
+      function go_delete_home(home_id){
+          $.ajax({
+              url: 'https://syohn.com/wp-json/home_retail/delete_property', // my php file
+              type: 'POST',
+              data :{home_retail_regex_id:home_id},
+              success: function (result) {
+           location.reload();
+              }
+          });
+          location.reload();
+      }
+      function go_edit_home(home_id) {
+          localStorage.setItem("edit_my_properties_home_id", home_id);
+          $.ajax({
+              url: 'https://syohn.com/wp-json/home_retail/get_data_from_database_information', // my php file
+              type: 'GET', // type of the HTTP request
+              success: function (result) {
+                  //   var obj = jQuery.parseJSON(result);
+                  console.log(result);
+                  result.map((item, index) => {
+                      if (item.home_id == home_id) {
+                          localStorage.setItem("real_link_kind", item.home_seller_kind);
+                          localStorage.setItem("home_retail_regex_id", item.home_retail_regex_id);
+                          window.location.href = "https://syohn.com/my-home-properties-detail/?home_id="+home_id;
+
+                      }
+                  })
+              }
+          });
+          // var form = document.getElementById("form-id");
+          // form.submit();
+      }
+      // Total_Array = Address_Array.concat(Photo_Array);
+      // console.log("Total_Array:", Total_Array);
+    </script>
+    <style>
+      .bn-dv-sty img {
+        width: 1200px;
+        height: 473px;
+      }
+      .home-serete-line {
+        background: #133c55;
+        width: 100%;
+        height: 5px;
+      }
+      .edit_button_style {
+        display: flex;
+        justify-content: flex-end;
+        position: relative;
+        top: -70px;
+      }
+      .edit_button_child_item {
+        color: white;
+        background: #005500;
+        font-size: 20px;
+        border: 0px solid #fff !important;
+        border-radius: 5px;
+        border: 0px;
+        cursor: pointer;
+        margin: 0px 10px;
+        right: 20px;
+        padding: 8px 31px;
+      }
+      .home-description {
+        width: 50%;
+        margin-left: 35px;
+      }
+
+      .home-address {
+        margin-left: 25px;
+        font-size: 20px;
+        color: black;
+        margin-bottom: -25px;
+      }
+
+      .home-address-end {
+        margin-left: 25px;
+        font-size: 20px;
+        color: black;
+      }
+      .home-address {
+        margin: 0 !important;
+      }
+      .home-address-end {
+        margin: 0 !important;
+      }
+      .home-discover-container-style {
+        border: 5px solid #dcdcdc !important;
+        border-radius: 5px !important;
+        padding: 15px !important;
+        box-shadow: 0 0 10px #ffffff;
+      }
+      .home-discover-image {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 0px !important;
+        width: 100%;
+        max-width: 370px !important;
+      }
+
+      .home-discover-container-style {
+        display: flex;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        padding: 15px;
+        width: 100%;
+        border-style: solid;
+        border-color: cadetblue;
+        border-radius: 20px;
+      }
+
+      .home-discover-container-style:hover {
+        box-shadow: gray 5px !important;
+        border-bottom-color: black;
+        border: 1px;
+        border-style: outset;
+      }
+
+      .discovery-image-over-text {
+        display: flex;
+        justify-content: center;
+        /*margin-top: -260px;*/
+        /*margin-bottom: 260px;*/
+        font-size: 40px;
+        color: #303133;
+        font-weight: 900;
+      }
+
+      @media (max-width: 800px) {
+        .home-description {
+          width: 100%;
+        }
+
+        .home-discover-container-style {
+          display: block !important;
+          width: 100%;
+          margin: auto;
+          padding: 3px;
+        }
+
+        .home-discover-image {
+          width: 100%;
+        }
+
+        .home-address {
+          font-size: 18px;
+        }
+
+        .discovery-image-over-text {
+          margin-top: -80px;
+          margin-bottom: 60px;
+          color: #133c55;
+        }
+
+        .discovey-top-image-style {
+          display: none;
+        }
+
+        .edit_button_child_item {
+          position: relative;
+          top: 96%;
+          /* right: 21%; */
+          left: 0%;
+          display: flex;
+          justify-content: center;
+          margin-top: 15px;
+          margin-bottom: 15px;
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div>
+      <div>
+        <!--<img class="discovey-top-image-style"-->
+        <!--    src="https://syohn.com/wp-content/uploads/home_retail_database/properties_bg.jpg" />-->
+        <div class="bn-dv-sty">
+          <img
+            class="discovey-top-image-style"
+            id="new-top-im"
+            src="https://syohn.com/wp-content/uploads/2020/08/AdobeStock_316876592_low.jpg"
+          />
+        </div>
+        <div class="discovery-image-over-text">My Properties</div>
+      </div>
+      <!-- <form action="https://syohn.com/home-information-detail" id="form-id" method="get" > -->
+      <div id="home_discover_container"></div>
+      <!-- </form> -->
+    </div>
+  </body>
+</html>

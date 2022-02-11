@@ -1,0 +1,1997 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <script  src="https://maps.googleapis.com/maps/api/js?libraries=places &        key=AIzaSyCYaU1NrbfqdsJ9JKS2FNBOKJ29VbGfYrk"></script>
+
+
+    <script type="text/javascript">
+	//alert('sdsd');
+        let gps_location = "";
+        let gps_location_link_flag = false;
+
+        var select_home_id = "";
+        var select_home_kind = "";
+        var select_home_retail_regex_id = "";
+        function get_default_data() {
+			
+            $.ajax({
+                url: 'https://syohn.com/wp-json/home_retail/get_data_from_database_information', // my php file
+                type: 'GET', // type of the HTTP request
+                success: function (result) {
+                    //   var obj = jQuery.parseJSON(result);
+                    console.log(result);
+                    var url_string = window.location.href
+                    var url = new URL(url_string);
+                    var home_id = url.searchParams.get("home_id");
+                    // alert(home_id);
+                    localStorage.setItem("edit_my_properties_home_id", home_id)
+
+                    console.log(home_id);
+                    result.map((item, index) => {
+                        if (item.home_id == home_id) {
+                            select_home_id = item.home_id;
+                            select_home_kind = item.home_seller_kind;
+                            select_home_retail_regex_id = item.home_retail_regex_id;
+
+                            Top_title_home = "";
+                            Top_title_home_price = "";
+                            Top_title_home += item.property_address_city1 ? item.property_address_city1 : "";
+                            Top_title_home += item.property_address_state1 ? "," + item.property_address_state1 : "";
+
+                            if (item.information_checkbox_12_sale_price_textarea) {
+                                Top_title_home_price += "Sale Price $" + item.information_checkbox_12_sale_price_textarea;
+                            } else {
+                                Top_title_home_price += item.Type_select_32_Broker_lease_textarea ? "lease price $" + item.Type_select_32_Broker_lease_textarea + "(" + item.Type_select_32_Broker_lease + ")" : "";
+                            }
+                            document.getElementById('home_address_text').innerHTML = Top_title_home;
+                            document.getElementById('Top_title_home_price').innerHTML = Top_title_home_price;
+                            document.getElementById('home_owner_kind_text').innerHTML = item.home_seller_kind;
+                            function isImage(filename) {
+                                var imageReg = /[\/.](svg|jpg|jpeg|tiff|png)$/i;
+                                return imageReg.test(filename)? true: false;
+                            }
+                            var carousel_innerHTML_value = "";
+                            var upload_keys = [
+                                "file_upload_EXTERIOR_LANDSCAPING",
+                                "file_upload_EXTERIOR_HOUSE" ,
+                                "file_upload_EXTERIOR_POOL" ,
+                                "file_upload_EXTERIOR_SHED" ,
+                                "file_upload_EXTERIOR_OTHER" ,
+                                "file_upload_INTERIOR_GARAGE" ,
+                                "file_upload_INTERIOR_MUD_ROOM", 
+                                "file_upload_INTERIOR_LIVING_ROOM",
+                                "file_upload_INTERIOR_DINING_ROOM" ,
+                                "file_upload_INTERIOR_FAMILY_ROOM" ,
+                                "file_upload_INTERIOR_MEDIA_ROOM",
+                                "file_upload_INTERIOR_BASEMENT_ROOM", 
+                                "file_upload_INTERIOR_KITCHEN_ROOM",
+                                "file_upload_INTERIOR_PANTRY_ROOM",
+                                "file_upload_INTERIOR_HALF_BATH",
+                                "file_upload_INTERIOR_OFFICE",
+                                "file_upload_INTERIOR_BEDROOMS",
+                                "file_upload_INTERIOR_MASTER_CLOSET",
+                                "file_upload_INTERIOR_MASTER_BATHROOM",
+                                "file_upload_INTERIOR_OTHER"
+                            ]
+                            var isfirst = "";
+                            var first_image = 0;
+                            for (var i = 0; i < upload_keys.length; i++) {
+                                let filenames = item[upload_keys[i]];
+                                if(filenames == null){ continue}
+                                filenames = filenames.split(',');
+                                for ( let j = 0; j < filenames.length; j++){
+                                    //set active once
+                                    console.dir('active'+first_image)
+                                    if(first_image == 0){
+                                        first_image += 1;
+                                        isfirst = 'active';
+                                    }
+                                    else {
+                                        isfirst = "";
+                                    }
+                                    if (isImage(filenames[j])) {
+                                        carousel_innerHTML_value += filenames[j] ? "<div class='item " + isfirst + "'><img class='discover-image' src='https://syohn.com/wp-content/uploads/home_retail_database/" + filenames[j] + "' alt='Image None' style='width:100%: ;background-repeat: no-repeat;'></div>" : "";
+                                    }
+                                    else {
+                                        let frame = '<div><h1>Doc 1</h1><iframe src="https://docs.google.com/gview?url=https://syohn.com/wp-content/uploads/home_retail_database/' + filenames[j] + '&embedded=true" height: 1000px"><p>Your browser does not support iframes.</p></iframe></div>';                                        
+                                        document.getElementsByClassName('file-viewer').innerHTML += frame;
+                                    }
+                                }
+                            }
+                            document.getElementById('carousel_image_contanier').innerHTML = carousel_innerHTML_value;
+
+                            // var Image_src = "https://syohn.com/wp-content/uploads/home_retail_database/" + item.file_upload_EXTERIOR_LANDSCAPING;
+                            // document.getElementById('home_discover_image').src = Image_src;
+                            // document.getElementById("home_discover_container_information").innerHTML += "<div class='text_style'>" + JSON.stringify(item) + "</div>";
+                            if (!item.information_checkbox_12_NA_1) {
+                                var information_purchase_option = "";
+                                information_purchase_option += item.information_checkbox_11 ? item.information_checkbox_11 : "";
+                                information_purchase_option += item.information_checkbox_12 ? "<br/>" + item.information_checkbox_12 : "";
+                                information_purchase_option += item.information_checkbox_13 ? "<br/>" + item.information_checkbox_13 : "";
+                                information_purchase_option += item.information_checkbox_14 ? "<br/>" + item.information_checkbox_14 : "";
+                                information_purchase_option += item.information_checkbox_15 ? "<br/>" + item.information_checkbox_15 : "";
+                                information_purchase_option += item.information_checkbox_16 ? "<br/>" + item.information_checkbox_16 : "";
+                                information_purchase_option += item.information_checkbox_17 ? "<br/>" + item.information_checkbox_17 : "";
+                                information_purchase_option += item.information_checkbox_18 ? "<br/>" + item.information_checkbox_18 : "";
+                                information_purchase_option += item.information_checkbox_19 ? "<br/>" + item.information_checkbox_19 : "";
+                                information_purchase_option += item.information_checkbox_111 ? "<br/>" + item.information_checkbox_111 : "";
+                                information_purchase_option += item.information_checkbox_112 ? "<br/>" + item.information_checkbox_112 : "";
+                                information_purchase_option += item.information_checkbox_113 ? "<br/>" + item.information_checkbox_113 : "";
+                                information_purchase_option += item.information_checkbox_114 ? "<br/>" + item.information_checkbox_114 : "";
+                                information_purchase_option += item.information_checkbox_115 ? "<br/>" + item.information_checkbox_115 : "";
+                                information_purchase_option += item.information_checkbox_116 ? "<br/>" + item.information_checkbox_116 : "";
+                                information_purchase_option += item.information_checkbox_117 ? "<br/>" + item.information_checkbox_1_textarea : "";
+                                document.getElementById('information_checkbox_11_purchase_option').innerHTML = "<h4> PURCHASE OPTIONS</h4>" + information_purchase_option;
+                            }
+
+                            var Information_Buying_Agent_Commission = "";
+                            Information_Buying_Agent_Commission += item.information_Buying_Agent_Commi_des_sct ? item.information_Buying_Agent_Commi_des_sct : "";
+
+                            document.getElementById('Information_Buying_Agent_Commission').innerHTML = "<h4>BUYING AGENT COMMISSION</h4>" + Information_Buying_Agent_Commission;
+
+                            if (!item.information_checkbox_12_NA_2) {
+                                var Information_SELLER_REPRESENTATION = "";
+                                Information_SELLER_REPRESENTATION += item.information_checkbox_21 ? item.information_checkbox_21 : "";
+                                Information_SELLER_REPRESENTATION += item.information_checkbox_22 ? item.information_checkbox_22 : "";
+                                Information_SELLER_REPRESENTATION += item.information_checkbox_23 ? item.information_checkbox_23 : "";
+                                document.getElementById('Information_SELLER_REPRESENTATION').innerHTML = "<h4> SELLER REPRESENTATION</h4>" + Information_SELLER_REPRESENTATION;
+                            }
+
+                            if (!item.information_checkbox_12_NA_3) {
+                                var Information_POSSESSION = "";
+                                Information_POSSESSION += item.information_checkbox_31 ? item.information_checkbox_31 : "";
+                                Information_POSSESSION += item.information_checkbox_32 ? item.information_checkbox_32 : "";
+                                Information_POSSESSION += item.information_checkbox_33 ? item.information_checkbox_33 : "";
+                                Information_POSSESSION += item.information_checkbox_34 ? item.information_checkbox_34 : "";
+                                Information_POSSESSION += item.information_checkbox_35 ? item.information_checkbox_3_textarea2 : "";
+                                document.getElementById('Information_POSSESSION').innerHTML = "<h4> POSSESSION</h4>" + Information_POSSESSION;
+                            }
+
+                            if (!item.information_checkbox_12_NA_4) {
+                                var Information_AUCTION = "";
+                                Information_AUCTION += item.information_checkbox_41_auction ? item.information_checkbox_41_auction : "No";
+                                document.getElementById('Information_AUCTION').innerHTML = "<h4>  AUCTION</h4>" + Information_AUCTION;
+                            }
+
+                            if (!item.information_checkbox_12_NA_5) {
+                                var Information_STIPULATION_OF_SALE = "No";
+                                // Information_STIPULATION_OF_SALE += item.information_select_5_textarea3 ? item.information_select_5_textarea3 : "No";
+                                document.getElementById('Information_STIPULATION_OF_SALE').innerHTML = "<h4>  STIPULATION OF SALE</h4>" + Information_STIPULATION_OF_SALE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_6) {
+                                var Information_HOME_WARRANTY = "";
+                                Information_HOME_WARRANTY += item.information_txt_abt_time_Remaining ? item.information_txt_abt_time_Remaining : "No";
+                                Information_HOME_WARRANTY += item.information_txt_abt_Warranty_Company ? "<br/>" + item.information_txt_abt_Warranty_Company : "";
+                                document.getElementById('Information_HOME_WARRANTY').innerHTML = "<h4>   HOME WARRANTY</h4>" + Information_HOME_WARRANTY;
+                            }
+
+                            if (!item.information_checkbox_12_NA_7) {
+                                var Information_TERMITE_BOND = "";
+                                Information_TERMITE_BOND += item.information__txt5_abt_bd_monthly ? item.information__txt5_abt_bd_monthly : "No";
+                                Information_TERMITE_BOND += item.information__txt5_abt_cpy_name ? "<br/>" + item.information__txt5_abt_cpy_name : "";
+                                document.getElementById('Information_TERMITE_BOND').innerHTML = "<h4>TERMITE BOND</h4>" + Information_TERMITE_BOND;
+                            }
+
+                            // property type tab
+                            if (!item.information_checkbox_12_NA_11) {
+                                var Type_PROPERTY_CATEGORY_1 = "";
+                                if (item.Type_checkbox_11 == "Other") { Type_PROPERTY_CATEGORY_1 += item.Type_checkbox_1_textarea } else { Type_PROPERTY_CATEGORY_1 += item.Type_checkbox_11 }
+                                document.getElementById('Type_PROPERTY_CATEGORY_1').innerHTML = "<h4> PROPERTY CATEGORY 1</h4>" + Type_PROPERTY_CATEGORY_1;
+                            }
+
+                            if (!item.information_checkbox_12_NA_12) {
+                                var Type_PROPERTY_CATEGORY_2 = "";
+                                if (item.Type_checkbox_21 == "other") { Type_PROPERTY_CATEGORY_2 += item.Type_checkbox_2_textarea2 } else { Type_PROPERTY_CATEGORY_2 += item.Type_checkbox_21 }
+                                document.getElementById('Type_PROPERTY_CATEGORY_2').innerHTML = "<h4>PROPERTY CATEGORY 2</h4>" + Type_PROPERTY_CATEGORY_2;
+                            }
+
+                            if (item.property_type_textarea_tax_amount) {
+                                var Type_LEGAL_TAXES = "";
+                                Type_LEGAL_TAXES += item.property_type_textarea_tax_amount ? item.property_type_textarea_tax_amount : "";
+                                document.getElementById('Type_LEGAL_TAXES').innerHTML = "<h4>  TAX AMOUNT</h4>" + Type_LEGAL_TAXES;
+                            }
+
+                            if (!item.information_checkbox_12_NA_13) {
+                                var Type_OWNER_OWNERS = "";
+                                Type_OWNER_OWNERS += item.Type_select_owner_1_first_name ? item.Type_select_owner_1_first_name : "";
+                                Type_OWNER_OWNERS += item.Type_select_owner_1_last_name ? "<br/>" + item.Type_select_owner_1_last_name : "";
+                                document.getElementById('Type_OWNER_OWNERS').innerHTML = "<h4>OWNER/OWNERS</h4>" + Type_OWNER_OWNERS;
+                            }
+
+                            if (!item.information_checkbox_12_NA_14) {
+                                var Type_Deed_Book = "";
+                                Type_Deed_Book += item.information_textarea_deep_book ? item.information_textarea_deep_book : "";
+                                document.getElementById('Type_Deed_Book').innerHTML = "<h4> Deed Book</h4>" + Type_Deed_Book;
+                            }
+
+                            if (!item.information_checkbox_12_NA_15) {
+                                var Type_Broker_Owner = "";
+                                if (item.desc_broker_owner_textarea_dropdown == "Yes") { Type_Broker_Owner += "YES" } else { Type_Broker_Owner += "NO" }
+                                document.getElementById('Type_Broker_Owner').innerHTML = "<h4>Broker Owner</h4>" + Type_Broker_Owner;
+                            }
+
+                            if (!item.information_checkbox_12_NA_16) {
+                                var Type_Deed_Page = "";
+                                Type_Deed_Page += item.information_textarea_Deed_page ? item.information_textarea_Deed_page : "";
+                                document.getElementById('Type_Deed_Page').innerHTML = "<h4>Deed Page</h4>" + Type_Deed_Page;
+                            }
+
+                            if (!item.information_checkbox_12_NA_18) {
+                                var Type_PID = "";
+                                Type_PID += item.information_textarea_plat_book_1234 ? item.information_textarea_plat_book_1234 : "";
+                                document.getElementById('Type_PID').innerHTML = "<h4>PID</h4>" + Type_PID;
+                            }
+
+                            if (!item.information_checkbox_12_NA_16) {
+                                var Type_Plat_Book = "";
+                                Type_Plat_Book += item.information_textarea_Deed_page ? item.information_textarea_Deed_page : "";
+                                document.getElementById('Type_Plat_Book').innerHTML = "<h4>Plat Book</h4>" + Type_Plat_Book;
+                            }
+
+                            if (!item.information_checkbox_12_NA_19) {
+                                var Type_Plat_Page = "YES";
+                                // Type_Plat_Page += item.information_textarea_Deed_page ? item.information_textarea_Deed_page : "";
+                                document.getElementById('Type_Plat_Page').innerHTML = "<h4>Plat Page</h4>" + Type_Plat_Page;
+                            }
+
+                            if (!item.information_checkbox_12_NA_10) {
+                                var Type_Land_Lot = "";
+                                Type_Land_Lot += item.information_checkbox_12__land_lot ? item.information_checkbox_12__land_lot : "";
+                                document.getElementById('Type_Land_Lot').innerHTML = "<h4>Land Lot</h4>" + Type_Land_Lot;
+                            }
+
+                            if (!item.information_checkbox_12_NA_111) {
+                                var Type_Special_Assessment = "";
+                                if (item.desc_special_ass == "Yes") { Type_Special_Assessment += item.desc_special_ass_text } else { Type_Special_Assessment += "NO" }
+                                document.getElementById('Type_Special_Assessment').innerHTML = "<h4>Special Assessment</h4>" + Type_Special_Assessment;
+                            }
+
+                            if (!item.information_checkbox_12_NA_112) {
+                                var Type_Tax_Year = "";
+                                Type_Tax_Year += item.information_checkbox_12_tax_year ? item.information_checkbox_12_tax_year : "";
+                                document.getElementById('Type_Tax_Year').innerHTML = "<h4>Tax Year</h4>" + Type_Tax_Year;
+                            }
+
+                            if (!item.information_checkbox_12_NA_113) {
+                                var Type_Zoning = "";
+                                Type_Zoning += item.information_checkbox_12_textarea ? item.information_checkbox_12_textarea : "";
+                                document.getElementById('Type_Zoning').innerHTML = "<h4>Zoning</h4>" + Type_Zoning;
+                            }
+
+                            if (!item.information_checkbox_12_NA_114) {
+                                var Type_TOTAL_REAL_ESTATE_PROPERTY_TAX = "";
+                                Type_TOTAL_REAL_ESTATE_PROPERTY_TAX += item.information_checkbox_12_total_real_estate ? item.information_checkbox_12_total_real_estate : "";
+                                document.getElementById('Type_TOTAL_REAL_ESTATE_PROPERTY_TAX').innerHTML = "<h4>TOTAL REAL ESTATE PROPERTY TAX</h4>" + Type_TOTAL_REAL_ESTATE_PROPERTY_TAX;
+                            }
+
+                            // if (!item.information_checkbox_12_NA_115) {
+                            //     var Type_SALE_PRICE = "";
+                            //     Type_SALE_PRICE += item.information_checkbox_12_sale_price_textarea ? item.information_checkbox_12_sale_price_textarea : "";
+                            //     document.getElementById('Type_SALE_PRICE').innerHTML = "<h4>SALE PRICE</h4>" + Type_SALE_PRICE;
+                            // }
+
+                            // if (!item.information_checkbox_12_NA_116) {
+                            //     var Type_LEASE_PRICE = "";
+                            //     Type_LEASE_PRICE += item.Type_select_32_Broker_lease ? item.Type_select_32_Broker_lease : "";
+                            //     document.getElementById('Type_LEASE_PRICE').innerHTML = "<h4>LEASE PRICE</h4>" + Type_LEASE_PRICE;
+                            // }
+
+                            if (!item.information_checkbox_12_NA_117) {
+                                var Type_LEASE_GROSS_YEARLY_INCOME = "";
+                                Type_LEASE_GROSS_YEARLY_INCOME += item.information_checkbox_12_textarea_lease ? item.information_checkbox_12_textarea_lease : "";
+                                document.getElementById('Type_LEASE_GROSS_YEARLY_INCOME').innerHTML = "<h4>LEASE GROSS YEARLY INCOME</h4>" + Type_LEASE_GROSS_YEARLY_INCOME;
+                            }
+
+
+                            // property address tab 
+                            if (!item.information_checkbox_12_NA_118) {
+                                var ADDRESS_STREET_ADDRESS = "";
+                                ADDRESS_STREET_ADDRESS += item.property_address_street_address1 ? item.property_address_street_address1 : "";
+                                document.getElementById('ADDRESS_STREET_ADDRESS').innerHTML = "<h4>STREET ADDRESS</h4>" + ADDRESS_STREET_ADDRESS;
+                            }
+
+                            if (!item.information_checkbox_12_NA_119) {
+                                var ADDRESS_UNIT = "";
+                                ADDRESS_UNIT += item.property_address_UNIT1 ? item.property_address_UNIT1 : "";
+                                document.getElementById('ADDRESS_UNIT').innerHTML = "<h4>UNIT</h4>" + ADDRESS_UNIT;
+                            }
+
+                            document.getElementById('ADDRESS_COUNTRY').innerHTML = "<h4>COUNTRY</h4>" + item.property_address_country_select;
+
+                            if (!item.information_checkbox_12_NA_120) {
+                                var ADDRESS_CITY = "";
+                                ADDRESS_CITY += item.property_address_city1 ? item.property_address_city1 : "";
+                                document.getElementById('ADDRESS_CITY').innerHTML = "<h4>CITY</h4>" + ADDRESS_CITY;
+                            }
+
+                            if (!item.information_checkbox_12_NA_121) {
+                                var ADDRESS_STATE = "";
+                                ADDRESS_STATE += item.property_address_state1 ? item.property_address_state1 : "";
+                                document.getElementById('ADDRESS_STATE').innerHTML = "<h4>STATE</h4>" + ADDRESS_STATE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_122) {
+                                var ADDRESS_ZIP_CODE = "";
+                                ADDRESS_ZIP_CODE += item.property_address_zip_code1 ? item.property_address_zip_code1 : "";
+                                document.getElementById('ADDRESS_ZIP_CODE').innerHTML = "<h4>ZIP CODE</h4>" + ADDRESS_ZIP_CODE;
+                            }
+
+                            // if (!item.information_checkbox_12_NA_123) {
+                            //     var ADDRESS_GEO_LAT = "";
+                            //     ADDRESS_GEO_LAT += item.property_address_geo_lat ? item.property_address_geo_lat : "";
+                            //     document.getElementById('ADDRESS_GEO_LAT').innerHTML = "<h4>GEO LAT</h4>" + ADDRESS_GEO_LAT;
+                            // }
+
+                            // if (!item.information_checkbox_12_NA_124) {
+                            //     var ADDRESS_GEO_LONG = "";
+                            //     ADDRESS_GEO_LONG += item.property_address_geo_long ? item.property_address_geo_long : "";
+                            //     document.getElementById('ADDRESS_GEO_LONG').innerHTML = "<h4>GEO LONG</h4>" + ADDRESS_GEO_LONG;
+                            // }
+
+                            if (!item.information_checkbox_12_NA_126) {
+                                var ADDRESS_CITY_LIMITS = "";
+                                ADDRESS_CITY_LIMITS += item.property_address_city_limits_1 ? item.property_address_city_limits_1 : "";
+                                document.getElementById('ADDRESS_CITY_LIMITS').innerHTML = "<h4>CITY LIMITS</h4>" + ADDRESS_CITY_LIMITS;
+                            }
+
+                            if (!item.information_checkbox_12_NA_127) {
+                                var ADDRESS_HISTORIC_DISTRICT = "";
+                                if (item.property_address_historic_district_1 == "yes") {
+                                    ADDRESS_HISTORIC_DISTRICT += item.information_checkbox_12_NA_128 ? "" : item.property_address_first_name_1;
+                                    ADDRESS_HISTORIC_DISTRICT += item.information_checkbox_12_NA_129 ? "" : "<br/>" + item.property_address_last_name1
+                                    ADDRESS_HISTORIC_DISTRICT += item.information_checkbox_12_NA_130 ? "" : "<br/>" + item.property_address_phone1
+                                    ADDRESS_HISTORIC_DISTRICT += item.information_checkbox_12_NA_131 ? "" : "<br/>" + item.property_address_email1
+                                } else { ADDRESS_HISTORIC_DISTRICT += "no" }
+                                document.getElementById('ADDRESS_HISTORIC_DISTRICT').innerHTML = "<h4>HISTORIC DISTRICT</h4>" + ADDRESS_HISTORIC_DISTRICT;
+                            }
+
+                            if (!item.information_checkbox_12_NA_132) {
+                                var ADDRESS_SUBDIVISION = "";
+                                ADDRESS_SUBDIVISION += item.property_address_SUBDIVISION ? item.property_address_SUBDIVISION : "";
+                                document.getElementById('ADDRESS_SUBDIVISION').innerHTML = "<h4>SUBDIVISION</h4>" + ADDRESS_SUBDIVISION;
+                            }
+
+                            if (!item.information_checkbox_12_NA_133) {
+                                var ADDRESS_SECONDARY_SUBDIVISION = "";
+                                ADDRESS_SECONDARY_SUBDIVISION += item.property_address_SECONDARY_SUBDIVISION ? item.property_address_SECONDARY_SUBDIVISION : "";
+                                document.getElementById('ADDRESS_SECONDARY_SUBDIVISION').innerHTML = "<h4>SECONDARY SUBDIVISION</h4>" + ADDRESS_SECONDARY_SUBDIVISION;
+                            }
+
+                            if (!item.information_checkbox_12_NA_134) {
+                                var ADDRESS_HOA = "";
+                                ADDRESS_HOA += item.property_address_HOA_select1 ? item.property_address_HOA_select1 : "";
+                                document.getElementById('ADDRESS_HOA').innerHTML = "<h4>HOA</h4>" + ADDRESS_HOA;
+                            }
+
+                            if (!item.information_checkbox_12_NA_135) {
+                                var ADDRESS_HOA_INITIATION_FEE = "";
+                                ADDRESS_HOA_INITIATION_FEE += item.property_address_HOA_INITIATION_FEE_textarea ? item.property_address_HOA_INITIATION_FEE_textarea : "";
+                                document.getElementById('ADDRESS_HOA_INITIATION_FEE').innerHTML = "<h4>HOA INITIATION FEE</h4>" + ADDRESS_HOA_INITIATION_FEE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_136) {
+                                var ADDRESS_HOA_MONTHLY_FEE = "";
+                                ADDRESS_HOA_MONTHLY_FEE += item.property_address_HOA_MONTHLY_FEE_textarea ? item.property_address_HOA_MONTHLY_FEE_textarea : "";
+                                document.getElementById('ADDRESS_HOA_MONTHLY_FEE').innerHTML = "<h4>HOA MONTHLY FEE</h4>" + ADDRESS_HOA_MONTHLY_FEE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_137) {
+                                var ADDRESS_ELEMENTARY = "";
+                                if (item.property_address_ELEMENTARY_select == "yes") {
+                                    ADDRESS_ELEMENTARY += item.property_address_ELEMENTARY_textarea ? item.property_address_ELEMENTARY_textarea : "";
+                                } else { ADDRESS_ELEMENTARY += "no" }
+                                document.getElementById('ADDRESS_ELEMENTARY').innerHTML = "<h4>ELEMENTARY</h4>" + ADDRESS_ELEMENTARY;
+                            }
+
+                            if (!item.information_checkbox_12_NA_138) {
+                                var ADDRESS_ELEMENTARY_2 = "";
+                                if (item.property_address_ELEMENTARY_2_select == "yes") {
+                                    ADDRESS_ELEMENTARY_2 += item.property_address_ELEMENTARY_2_textarea ? item.property_address_ELEMENTARY_2_textarea : "";
+                                } else { ADDRESS_ELEMENTARY_2 += "no" }
+                                document.getElementById('ADDRESS_ELEMENTARY_2').innerHTML = "<h4> ELEMENTARY 2</h4>" + ADDRESS_ELEMENTARY_2;
+                            }
+
+                            if (!item.information_checkbox_12_NA_139) {
+                                var ADDRESS_MIDDLE_SCHOOL = "";
+                                if (item.property_address_MIDDLE_SCHOOL_select == "yes") {
+                                    ADDRESS_MIDDLE_SCHOOL += item.property_address_MIDDLE_SCHOOL_textarea ? item.property_address_MIDDLE_SCHOOL_textarea : "";
+                                } else { ADDRESS_MIDDLE_SCHOOL += "no" }
+                                document.getElementById('ADDRESS_MIDDLE_SCHOOL').innerHTML = "<h4>MIDDLE SCHOOL</h4>" + ADDRESS_MIDDLE_SCHOOL;
+                            }
+
+                            if (!item.information_checkbox_12_NA_14012) {
+                                var ADDRESS_MIDDLE_SCHOOL_2 = "";
+                                if (item.property_address_MIDDLE_SCHOOL_2_select == "yes") {
+                                    ADDRESS_MIDDLE_SCHOOL_2 += item.property_address_MIDDLE_SCHOOL_2_textarea ? item.property_address_MIDDLE_SCHOOL_2_textarea : "";
+                                } else { ADDRESS_MIDDLE_SCHOOL_2 += "no" }
+                                document.getElementById('ADDRESS_MIDDLE_SCHOOL_2').innerHTML = "<h4>MIDDLE SCHOOL 2</h4>" + ADDRESS_MIDDLE_SCHOOL_2;
+                            }
+
+                            if (!item.information_checkbox_12_NA_140) {
+                                var ADDRESS_HIGH_SCHOOL = "";
+                                if (item.property_address_HIGH_SCHOOL_select == "yes") {
+                                    ADDRESS_HIGH_SCHOOL += item.property_address_HIGH_SCHOOL_textarea ? item.property_address_HIGH_SCHOOL_textarea : "";
+                                } else { ADDRESS_HIGH_SCHOOL += "no" }
+                                document.getElementById('ADDRESS_HIGH_SCHOOL').innerHTML = "<h4> HIGH SCHOOL</h4>" + ADDRESS_HIGH_SCHOOL;
+                            }
+
+                            if (!item.information_checkbox_12_NA_142) {
+                                var ADDRESS_HIGH_SCHOOL_2 = "";
+                                if (item.property_address_HIGH_SCHOOL_2_select == "yes") {
+                                    ADDRESS_HIGH_SCHOOL_2 += item.property_address_HIGH_SCHOOL_2_textarea ? item.property_address_HIGH_SCHOOL_2_textarea : "";
+                                } else { ADDRESS_HIGH_SCHOOL_2 += "no" }
+                                document.getElementById('ADDRESS_HIGH_SCHOOL_2').innerHTML = "<h4>HIGH SCHOOL 2</h4>" + ADDRESS_HIGH_SCHOOL_2;
+                            }
+
+                            // property description  tab
+                            if (!item.information_checkbox_12_NA_143) {
+                                var Description_PROPERTY_TAG_LINE = "";
+                                Description_PROPERTY_TAG_LINE += item.PROPERTY_DESCRIPTION_PROPERTY_TAG_LINE_input ? item.PROPERTY_DESCRIPTION_PROPERTY_TAG_LINE_input : "";
+                                document.getElementById('Description_PROPERTY_TAG_LINE').innerHTML = "<h4>PROPERTY TAG LINE</h4>" + Description_PROPERTY_TAG_LINE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_144) {
+                                var Description_PROPERTY_DESCRIPTION = "";
+                                Description_PROPERTY_DESCRIPTION += item.PROPERTY_DESCRIPTION_PROPERTY_DESCRIPTION_input ? item.PROPERTY_DESCRIPTION_PROPERTY_DESCRIPTION_input : "";
+                                document.getElementById('Description_PROPERTY_DESCRIPTION').innerHTML = "<h4>PROPERTY DESCRIPTION</h4>" + Description_PROPERTY_DESCRIPTION;
+                            }
+
+                            if (!item.information_checkbox_12_NA_145) {
+                                var Description_YEAR_BUILT = "";
+                                Description_YEAR_BUILT += item.PROPERTY_DESCRIPTION_year_built_input ? item.PROPERTY_DESCRIPTION_year_built_input : "";
+                                document.getElementById('Description_YEAR_BUILT').innerHTML = "<h4>YEAR BUILT</h4>" + Description_YEAR_BUILT;
+                            }
+
+                            if (!item.information_checkbox_12_NA_146) {
+                                var Description_CONSTRUCTION_TYPE = "";
+                                Description_CONSTRUCTION_TYPE += item.Description_select_2 ? item.Description_select_2 : "";
+                                Description_CONSTRUCTION_TYPE += item.Description_select_21 ? "<br/>" + item.Description_select_21 : "";
+                                Description_CONSTRUCTION_TYPE += item.Description_select_22 ? "<br/>" + item.Description_select_22 : "";
+                                Description_CONSTRUCTION_TYPE += item.Description_select_23 ? "<br/>" + item.Description_select_23 : "";
+                                Description_CONSTRUCTION_TYPE += item.Description_select_24 ? "<br/>" + item.Description_select_24 : "";
+                                Description_CONSTRUCTION_TYPE += item.Description_select_25 ? "<br/>" + item.Description_select_25 : "";
+                                Description_CONSTRUCTION_TYPE += item.Description_select_26 ? "<br/>" + item.Description_select_26 : "";
+                                Description_CONSTRUCTION_TYPE += item.Description_select_27 ? "<br/>other:" + item.Description_select_27_CONSTRUCTION_TYPE_textarea : "";
+                                document.getElementById('Description_CONSTRUCTION_TYPE').innerHTML = "<h4>CONSTRUCTION TYPE</h4>" + Description_CONSTRUCTION_TYPE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_147) {
+                                var Description_FOUNDATION_TYPE = "";
+                                Description_FOUNDATION_TYPE += item.Description_select_3 ? item.Description_select_3 : "";
+                                Description_FOUNDATION_TYPE += item.Description_select_31 ? "<br/>" + item.Description_select_31 : "";
+                                Description_FOUNDATION_TYPE += item.Description_select_32 ? "<br/>" + item.Description_select_32 : "";
+                                Description_FOUNDATION_TYPE += item.Description_select_33 ? "<br/>" + item.Description_select_33 : "";
+                                Description_FOUNDATION_TYPE += item.Description_select_34 ? "<br/>" + item.Description_select_34 : "";
+                                Description_FOUNDATION_TYPE += item.Description_select_35 ? "<br/>" + item.Description_select_35 : "";
+                                Description_FOUNDATION_TYPE += item.Description_select_36 ? "<br/>" + item.Description_select_36 : "";
+                                Description_FOUNDATION_TYPE += item.Description_select_37 ? "<br/>" + item.Description_select_37 : "";
+                                Description_FOUNDATION_TYPE += item.Description_select_38 ? "<br/>" + item.Description_select_38 : "";
+                                Description_FOUNDATION_TYPE += item.Description_select_39 ? "<br/>" + item.Description_select_39 : "";
+                                Description_FOUNDATION_TYPE += item.Description_select_310 ? "<br/>other:" + item.Description_select_310_textarea : "";
+                                document.getElementById('Description_FOUNDATION_TYPE').innerHTML = "<h4>FOUNDATION TYPE</h4>" + Description_FOUNDATION_TYPE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_148) {
+                                var Description_LOT_ACRES = "";
+                                Description_LOT_ACRES += item.Description_select_LOT_ACRES_textarea ? item.Description_select_LOT_ACRES_textarea : "";
+                                document.getElementById('Description_LOT_ACRES').innerHTML = "<h4>LOT ACRES</h4>" + Description_LOT_ACRES;
+                            }
+
+                            if (!item.information_checkbox_12_NA_149) {
+                                var Description_LOT_SQUARE_FOOTAGE = "";
+                                Description_LOT_SQUARE_FOOTAGE += item.Description_select_LOT_SQUARE_FOOTAGE_textarea ? item.Description_select_LOT_SQUARE_FOOTAGE_textarea : "";
+                                document.getElementById('Description_LOT_SQUARE_FOOTAGE').innerHTML = "<h4>LOT SQUARE FOOTAGE</h4>" + Description_LOT_SQUARE_FOOTAGE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_150) {
+                                var Description_LOT_DIMENTIONS = "";
+                                Description_LOT_DIMENTIONS += item.Description_select_LOT_DIMENTIONS_textarea ? item.Description_select_LOT_DIMENTIONS_textarea : "";
+                                document.getElementById('Description_LOT_DIMENTIONS').innerHTML = "<h4>LOT DIMENTIONS</h4>" + Description_LOT_DIMENTIONS;
+                            }
+
+                            if (!item.information_checkbox_12_NA_143_001_m_8) {
+                                var Description_ROOM_DIMENSIONS = "";
+                                if (!item.information_checkbox_12_NA_143_002) {
+                                    Description_ROOM_DIMENSIONS += "<h5> KITCHEN</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_KITCHEN_length_input ? item.Description_select_KITCHEN_length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_KITCHEN_width_input ? " x " + item.Description_select_KITCHEN_width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_1) {
+                                    Description_ROOM_DIMENSIONS += "<h5> DINING ROOM</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_DINING_ROOM_length_input ? item.Description_select_DINING_ROOM_length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_DINING_ROOM_width_input ? " x " + item.Description_select_DINING_ROOM_width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_2) {
+                                    Description_ROOM_DIMENSIONS += "<h5> LIVING ROOM</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_LIVING_ROOM_length_input ? item.Description_select_LIVING_ROOM_length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_LIVING_ROOM_width_input ? " x " + item.Description_select_LIVING_ROOM_width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_3) {
+                                    Description_ROOM_DIMENSIONS += "<h5> FAMILY ROOM</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_FAMILY_ROOM_length_input ? item.Description_select_FAMILY_ROOM_length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_FAMILY_ROOM_width_input ? " x " + item.Description_select_FAMILY_ROOM_width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_4) {
+                                    Description_ROOM_DIMENSIONS += "<h5> PANTRY</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_PANTRY_Length_input ? item.Description_select_PANTRY_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_PANTRY_width_input ? " x " + item.Description_select_PANTRY_width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_5) {
+                                    Description_ROOM_DIMENSIONS += "<h5> MUDROOM</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_MUDROOM_Length_input ? item.Description_select_MUDROOM_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_MUDROOM_Width_input ? " x " + item.Description_select_MUDROOM_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_6) {
+                                    Description_ROOM_DIMENSIONS += "<h5> OFFICE</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_OFFICE_Length_input ? item.Description_select_OFFICE_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_OFFICE_Width_input ? " x " + item.Description_select_OFFICE_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_7) {
+                                    Description_ROOM_DIMENSIONS += "<h5> ½ BATH </h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_1_2_BATH_Length_input ? item.Description_select_1_2_BATH_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_1_2_BATH_Width_input ? " x " + item.Description_select_1_2_BATH_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_8) {
+                                    Description_ROOM_DIMENSIONS += "<h5> GARAGE</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_GARAGE_Length_input ? item.Description_select_GARAGE_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_GARAGE_Width_input ? " x " + item.Description_select_GARAGE_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_9) {
+                                    Description_ROOM_DIMENSIONS += "<h5> CARPORT</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_CARPORT_Length_input ? item.Description_select_CARPORT_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_CARPORT_Width_input ? " x " + item.Description_select_CARPORT_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_n_1) {
+                                    Description_ROOM_DIMENSIONS += "<h5> PATIO</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_PATIO_Length_input ? item.Description_select_PATIO_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_PATIO_Width_input ? " x " + item.Description_select_PATIO_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_n_2) {
+                                    Description_ROOM_DIMENSIONS += "<h5> DECK</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_DECK_Length_input ? item.Description_select_DECK_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_DECK_Width_input ? " x " + item.Description_select_DECK_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_n_3) {
+                                    Description_ROOM_DIMENSIONS += "<h5> MEDIA ROOM</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_MEDIA_ROOM_Length_input ? item.Description_select_MEDIA_ROOM_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_MEDIA_ROOM_Width_input ? " x " + item.Description_select_MEDIA_ROOM_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_n_4) {
+                                    Description_ROOM_DIMENSIONS += "<h5> BONUS ROOM</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_BONUS_ROOM_Length_input ? item.Description_select_BONUS_ROOM_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_BONUS_ROOM_Width_input ? " x " + item.Description_select_BONUS_ROOM_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_n_5) {
+                                    Description_ROOM_DIMENSIONS += "<h5> MASTER BEDROOM</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_MASTER_BEDROOM_Length_input ? item.Description_select_MASTER_BEDROOM_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_MASTER_BEDROOM_Width_input ? " x " + item.Description_select_MASTER_BEDROOM_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_n_6) {
+                                    Description_ROOM_DIMENSIONS += "<h5> MASTER BATHROOM</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_MASTER_BATHROOM_Length_input ? item.Description_select_MASTER_BATHROOM_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_MASTER_BATHROOM_Width_input ? " x " + item.Description_select_MASTER_BATHROOM_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_n_7) {
+                                    Description_ROOM_DIMENSIONS += "<h5> MASTER CLOSET</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_MASTER_CLOSET_Length_input ? item.Description_select_MASTER_CLOSET_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_MASTER_CLOSET_Width_input ? " x " + item.Description_select_MASTER_CLOSET_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_n_8) {
+                                    Description_ROOM_DIMENSIONS += "<h5> BEDROOM 1</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_BEDROOM_1_Length_input ? item.Description_select_BEDROOM_1_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_BEDROOM_1_Width_input ? " x " + item.Description_select_BEDROOM_1_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_n_9) {
+                                    Description_ROOM_DIMENSIONS += "<h5> CLOSET 1</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_CLOSET_1_Length_input ? item.Description_select_CLOSET_1_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_CLOSET_1_Width_input ? " x " + item.Description_select_CLOSET_1_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_m_1) {
+                                    Description_ROOM_DIMENSIONS += "<h5> BEDROOM 2</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_BEDROOM_2_Length_input ? item.Description_select_BEDROOM_2_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_BEDROOM_2_Width_input ? " x " + item.Description_select_BEDROOM_2_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_m_2) {
+                                    Description_ROOM_DIMENSIONS += "<h5> CLOSET 2</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_CLOSET_2_Length_input ? item.Description_select_CLOSET_2_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_CLOSET_2_Width_input ? " x " + item.Description_select_CLOSET_2_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_m_3) {
+                                    Description_ROOM_DIMENSIONS += "<h5> BEDROOM 3</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_BEDROOM_3_Length_input ? item.Description_select_BEDROOM_3_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_BEDROOM_3_Width_input ? " x " + item.Description_select_BEDROOM_3_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_m_4) {
+                                    Description_ROOM_DIMENSIONS += "<h5> CLOSET 3</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_CLOSET_3_Length_input ? item.Description_select_CLOSET_3_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_CLOSET_3_Width_input ? " x " + item.Description_select_CLOSET_3_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_m_5) {
+                                    Description_ROOM_DIMENSIONS += "<h5> BATHROOM 1</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_BATHROOM_1_Length_input ? item.Description_select_BATHROOM_1_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_BATHROOM_1_Width_input ? " x " + item.Description_select_BATHROOM_1_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_m_6) {
+                                    Description_ROOM_DIMENSIONS += "<h5> BATHROOM 2</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_BATHROOM_2_Length_input ? item.Description_select_BATHROOM_2_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_BATHROOM_2_Width_input ? " x " + item.Description_select_BATHROOM_2_Width_input : " ";
+                                }
+                                if (!item.information_checkbox_12_NA_143_001_m_7) {
+                                    Description_ROOM_DIMENSIONS += "<h5> BATHROOM 3</h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_BATHROOM_3_Length_input ? item.Description_select_BATHROOM_3_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_BATHROOM_3_Width_input ? " x " + item.Description_select_BATHROOM_3_Width_input : " ";
+                                }
+                                if (item.description_select_3_checkbox123_other) {
+                                    Description_ROOM_DIMENSIONS += "<h5> OTHER </h5>";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_OTHER_1_description ? item.Description_select_OTHER_1_description : " ";
+                                    Description_ROOM_DIMENSIONS += "<br/>" + item.Description_select_OTHER_1_Length_input ? item.Description_select_OTHER_1_Length_input : " ";
+                                    Description_ROOM_DIMENSIONS += item.Description_select_OTHER_1_Width_input ? " x " + item.Description_select_OTHER_1_Width_input : " ";
+                                }
+                                document.getElementById('Description_ROOM_DIMENSIONS').innerHTML = "<h4>ROOM DIMENSIONS</h4>" + Description_ROOM_DIMENSIONS;
+                            }
+
+                            if (!item.information_checkbox_12_NA_151) {
+                                var Description_PARKING = "";
+                                Description_PARKING += item.Description_select_3_checkbox123 ? item.Description_select_3_checkbox123 : "";
+                                Description_PARKING += item.Description_select_3_checkbox12321 ? "<br/>" + item.Description_select_3_checkbox12321 : "";
+                                Description_PARKING += item.Description_select_3_checkbox12322 ? "<br/>" + item.Description_select_3_checkbox12322 : "";
+                                Description_PARKING += item.Description_select_3_checkbox12323 ? "<br/>" + item.Description_select_3_checkbox12323 : "";
+                                Description_PARKING += item.Description_select_3_checkbox12324 ? "<br/>" + item.Description_select_3_checkbox12324 : "";
+                                Description_PARKING += item.Description_select_3_checkbox12325 ? "<br/>" + item.Description_select_3_checkbox12325 : "";
+                                Description_PARKING += item.Description_select_3_checkbox12326 ? "<br/>" + item.Description_select_3_checkbox12326 : "";
+                                Description_PARKING += item.Description_select_3_checkbox12327 ? "<br/>" + item.Description_select_3_checkbox12327 : "";
+                                Description_PARKING += item.Description_select_3_checkbox12328 ? "<br/>" + item.Description_select_3_checkbox12328 : "";
+                                Description_PARKING += item.Description_select_3_checkbox12329 ? "<br/>" + item.Description_select_3_checkbox12329 : "";
+                                Description_PARKING += item.Description_select_3_checkbox123211 ? "<br/>" + item.Description_select_3_checkbox123211 : "";
+                                Description_PARKING += item.Description_select_3_checkbox123212 ? "<br/>" + item.Description_select_3_checkbox123212 : "";
+                                Description_PARKING += item.Description_select_3_checkbox123213 ? "<br/>" + item.Description_select_3_checkbox123213 : "";
+                                Description_PARKING += item.Description_select_3_checkbox123214 ? "<br/>" + item.Description_select_3_checkbox123214 : "";
+                                Description_PARKING += item.Description_select_3_checkbox123215 ? "<br/>" + item.Description_select_3_checkbox123215 : "";
+                                Description_PARKING += item.Description_select_3_checkbox123216 ? "<br/>" + item.Description_select_3_checkbox123216 : "";
+                                Description_PARKING += item.Description_select_3_checkbox123217 ? "<br/>" + item.Description_select_3_checkbox123217 : "";
+                                Description_PARKING += item.Description_select_3_checkbox123218 ? "<br/>" + item.Description_select_3_checkbox123218_textarea : "";
+                                document.getElementById('Description_PARKING').innerHTML = "<h4>PARKING</h4>" + Description_PARKING;
+                            }
+
+                            if (!item.information_checkbox_12_NA_152) {
+                                var Description_RV_BOAT_PARKING = "";
+                                if (item.Description_select_512_dropdownChanges == "yes") {
+                                    Description_RV_BOAT_PARKING += item.Description_select_512_dropdownChanges_textarea ? item.Description_select_512_dropdownChanges_textarea : "";
+                                } else {
+                                    Description_RV_BOAT_PARKING += "NO";
+                                }
+                                document.getElementById('Description_RV_BOAT_PARKING').innerHTML = "<h4>RV BOAT PARKING</h4>" + Description_RV_BOAT_PARKING;
+                            }
+
+                            if (!item.information_checkbox_12_NA_153) {
+                                var Description_PARKING_MAINTENANCE = "";
+                                Description_PARKING_MAINTENANCE += item.Description_select_3_checkbox123123 ? item.Description_select_3_checkbox123123 : "";
+                                Description_PARKING_MAINTENANCE += item.Description_select_3_checkbox12321ttt ? "<br/>" + item.Description_select_3_checkbox12321ttt : "";
+                                Description_PARKING_MAINTENANCE += item.Description_select_3_checkbox12322_private ? "<br/>" + item.Description_select_3_checkbox12322_private : "";
+                                Description_PARKING_MAINTENANCE += item.Description_select_3_checkbox12323123 ? "<br/>" + item.Description_select_3_checkbox12323123 : "";
+                                Description_PARKING_MAINTENANCE += item.Description_select_3_checkbox123218 ? "<br/>" + item.Description_select_3_checkbox123218_textarea123 : "";
+                                document.getElementById('Description_PARKING_MAINTENANCE').innerHTML = "<h4>PARKING MAINTENANCE</h4>" + Description_PARKING_MAINTENANCE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_154) {
+                                var Description_TRASH = "";
+                                Description_TRASH += item.Description_select_4_checkbox123123 ? item.Description_select_4_checkbox123123 : "";
+                                Description_TRASH += item.Description_select_4_checkbox12321123 ? "<br/>" + item.Description_select_4_checkbox12321123 : "";
+                                Description_TRASH += item.Description_select_4_checkbox12322123 ? "<br/>" + item.Description_select_4_checkbox12322123 : "";
+                                Description_TRASH += item.Description_select_4_checkbox12323123 ? "<br/>" + item.Description_select_4_checkbox12323123 : "";
+                                Description_TRASH += item.Description_select_4_checkbox12323123_recycling ? "<br/>" + item.Description_select_4_checkbox12323123_recycling : "";
+                                Description_TRASH += item.Description_select_4_checkbox123218123 ? "<br/>" + item.Description_select_4_checkbox123218_textarea123 : "";
+                                document.getElementById('Description_TRASH').innerHTML = "<h4>TRASH</h4>" + Description_TRASH;
+                            }
+
+                            if (!item.information_checkbox_12_NA_155) {
+                                var Description_HANDICAP_ACCESSIBLE = "";
+                                Description_HANDICAP_ACCESSIBLE += item.Description_select_4_HANDICAP_ACCESSIBLE;
+                                document.getElementById('Description_HANDICAP_ACCESSIBLE').innerHTML = "<h4>HANDICAP ACCESSIBLE</h4>" + Description_HANDICAP_ACCESSIBLE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_156) {
+                                var Description_RAMP = "";
+                                Description_RAMP += item.Description_select_4_RAMP_1;
+                                document.getElementById('Description_RAMP').innerHTML = "<h4>RAMP</h4>" + Description_RAMP;
+                            }
+
+                            if (!item.information_checkbox_12_NA_157) {
+                                var Description_ACCESSIBLE_ENTRANCE = "";
+                                Description_ACCESSIBLE_ENTRANCE += item.Description_select_4_ACCESSIBLE_ENTRANCE;
+                                document.getElementById('Description_ACCESSIBLE_ENTRANCE').innerHTML = "<h4>ACCESSIBLE ENTRANCE</h4>" + Description_ACCESSIBLE_ENTRANCE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_158) {
+                                var Description_BATHROOM = "";
+                                Description_BATHROOM += item.Description_select_4_BATHROOM_123;
+                                document.getElementById('Description_BATHROOM').innerHTML = "<h4>BATHROOM</h4>" + Description_BATHROOM;
+                            }
+
+                            if (!item.information_checkbox_12_NA_159) {
+                                var Description_ELEVATOR = "";
+                                Description_ELEVATOR += item.Description_select_4_HANDICAP_ACCESSIBLE;
+                                document.getElementById('Description_ELEVATOR').innerHTML = "<h4>ELEVATOR</h4>" + Description_ELEVATOR;
+                            }
+
+                            if (!item.information_checkbox_12_NA_160) {
+                                var Description_HALLWAYS = "";
+                                Description_HALLWAYS += item.Description_select_4_HALLWAYS_123;
+                                document.getElementById('Description_HALLWAYS').innerHTML = "<h4>HALLWAYS</h4>" + Description_HALLWAYS;
+                            }
+
+                            if (!item.information_checkbox_12_NA_161) {
+                                var Description_KITCHEN = "";
+                                Description_KITCHEN += item.Description_select_4_KITCHEN_123;
+                                document.getElementById('Description_KITCHEN').innerHTML = "<h4>KITCHEN</h4>" + Description_KITCHEN;
+                            }
+
+                            if (!item.information_checkbox_12_NA_162) {
+                                var Description_WATERFRONT = "";
+                                Description_WATERFRONT += item.Description_select_4_WATERFRONT_123;
+                                document.getElementById('Description_WATERFRONT').innerHTML = "<h4>WATERFRONT</h4>" + Description_WATERFRONT;
+                            }
+
+
+                            if (!item.information_checkbox_12_NA_163) {
+                                var Description_WATER_ACCESS = "";
+                                if (item.Description_select_4_WATER_ACCESS_123 == "yes") {
+                                    Description_WATER_ACCESS += item.other_sec_description_check_1 ? item.other_sec_description_check_1 : "";
+                                    Description_WATER_ACCESS += item.other_sec_description_check_11 ? "<br/>" + item.other_sec_description_check_11 : "";
+                                    Description_WATER_ACCESS += item.other_sec_description_check_12 ? "<br/>" + item.other_sec_description_check_12 : "";
+                                    Description_WATER_ACCESS += item.other_sec_description_check_13 ? "<br/>" + item.other_sec_description_check_13 : "";
+                                    Description_WATER_ACCESS += item.other_sec_description_check_14 ? "<br/>" + item.other_sec_description_check_14 : "";
+                                } else {
+                                    Description_WATER_ACCESS += "NO";
+                                }
+                                document.getElementById('Description_WATER_ACCESS').innerHTML = "<h4>WATER ACCESS</h4>" + Description_WATER_ACCESS;
+                            }
+
+                            if (!item.information_checkbox_12_NA_164) {
+                                var Description_WATERVIEW = "";
+                                Description_WATERVIEW += item.other_sec_description_check_2 ? item.other_sec_description_check_2 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_21 ? "<br/>" + item.other_sec_description_check_21 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_22 ? "<br/>" + item.other_sec_description_check_22 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_23 ? "<br/>" + item.other_sec_description_check_23 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_24 ? "<br/>" + item.other_sec_description_check_24 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_25 ? "<br/>" + item.other_sec_description_check_25 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_26 ? "<br/>" + item.other_sec_description_check_26 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_27 ? "<br/>" + item.other_sec_description_check_27 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_28 ? "<br/>" + item.other_sec_description_check_28 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_29 ? "<br/>" + item.other_sec_description_check_29 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_210 ? "<br/>" + item.other_sec_description_check_210 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_211 ? "<br/>" + item.other_sec_description_check_211 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_212 ? "<br/>" + item.other_sec_description_check_212 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_213 ? "<br/>" + item.other_sec_description_check_213 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_214 ? "<br/>" + item.other_sec_description_check_214 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_215 ? "<br/>" + item.other_sec_description_check_215 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_216 ? "<br/>" + item.other_sec_description_check_216 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_217 ? "<br/>" + item.other_sec_description_check_217 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_218 ? "<br/>" + item.other_sec_description_check_218 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_219 ? "<br/>" + item.other_sec_description_check_219 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_220 ? "<br/>" + item.other_sec_description_check_220 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_221 ? "<br/>" + item.other_sec_description_check_221 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_222 ? "<br/>" + item.other_sec_description_check_222 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_223 ? "<br/>" + item.other_sec_description_check_223 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_224 ? "<br/>" + item.other_sec_description_check_224 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_225 ? "<br/>" + item.other_sec_description_check_225 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_226 ? "<br/>" + item.other_sec_description_check_226 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_227 ? "<br/>" + item.other_sec_description_check_227 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_228 ? "<br/>" + item.other_sec_description_check_228 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_229 ? "<br/>" + item.other_sec_description_check_229 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_230 ? "<br/>" + item.other_sec_description_check_230 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_231 ? "<br/>" + item.other_sec_description_check_231 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_232 ? "<br/>" + item.other_sec_description_check_232 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_233 ? "<br/>" + item.other_sec_description_check_233 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_234 ? "<br/>" + item.other_sec_description_check_234 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_235 ? "<br/>" + item.other_sec_description_check_235 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_236 ? "<br/>" + item.other_sec_description_check_236 : "";
+                                Description_WATERVIEW += item.other_sec_description_check_237 ? "<br/>" + item.other_sec_description_check_237 : "";
+                                document.getElementById('Description_WATERVIEW').innerHTML = "<h4>WATERVIEW</h4>" + Description_WATERVIEW;
+                            }
+
+                            if (!item.information_checkbox_12_NA_165) {
+                                var Description_COBRA_ZONE = "";
+                                Description_COBRA_ZONE += item.other_sec_description_COBRA_ZONE_select;
+                                document.getElementById('Description_COBRA_ZONE').innerHTML = "<h4>COBRA ZONE</h4>" + Description_COBRA_ZONE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_166) {
+                                var Description_FEDERAL_FLOOD_INSURANCE_AVAILBLE = "";
+                                Description_FEDERAL_FLOOD_INSURANCE_AVAILBLE += item.other_sec_description_FEDERAL_FLOOD_INSURANCE_AVAILBLE_select;
+                                document.getElementById('Description_FEDERAL_FLOOD_INSURANCE_AVAILBLE').innerHTML = "<h4>FEDERAL FLOOD INSURANCE AVAILBLE</h4>" + Description_FEDERAL_FLOOD_INSURANCE_AVAILBLE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_167) {
+                                var Description_PROPERTY_LOCATION = "";
+                                Description_PROPERTY_LOCATION += item.other_sec_description_PROPERTY_LOCATION_select;
+                                document.getElementById('Description_PROPERTY_LOCATION').innerHTML = "<h4>PROPERTY LOCATION</h4>" + Description_PROPERTY_LOCATION;
+                            }
+
+                            if (!item.information_checkbox_12_NA_168) {
+                                var Description_FLOOD_ZONE_TYPE = "";
+                                Description_FLOOD_ZONE_TYPE += item.other_sec_description_check_3 ? "<br/>" + item.other_sec_description_check_3 : "";
+                                Description_FLOOD_ZONE_TYPE += item.other_sec_description_check_31 ? "<br/>" + item.other_sec_description_check_31 : "";
+                                Description_FLOOD_ZONE_TYPE += item.other_sec_description_check_32 ? "<br/>" + item.other_sec_description_check_32 : "";
+                                Description_FLOOD_ZONE_TYPE += item.other_sec_description_check_33 ? "<br/>" + item.other_sec_description_check_33 : "";
+                                Description_FLOOD_ZONE_TYPE += item.other_sec_description_check_34 ? "<br/>" + item.other_sec_description_check_34 : "";
+                                Description_FLOOD_ZONE_TYPE += item.other_sec_description_check_35 ? "<br/>" + item.other_sec_description_check_35 : "";
+                                Description_FLOOD_ZONE_TYPE += item.other_sec_description_check_36 ? "<br/>" + item.other_sec_description_check_36 : "";
+                                Description_FLOOD_ZONE_TYPE += item.other_sec_description_check_37 ? "<br/>" + item.other_sec_description_check_37 : "";
+                                Description_FLOOD_ZONE_TYPE += item.other_sec_description_check_38 ? "<br/>" + item.other_sec_description_check_38 : "";
+                                Description_FLOOD_ZONE_TYPE += item.other_sec_description_check_39 ? "<br/>" + item.other_sec_description_check_39 : "";
+                                Description_FLOOD_ZONE_TYPE += item.other_sec_description_check_310 ? "<br/>" + item.other_sec_description_check_310 : "";
+                                Description_FLOOD_ZONE_TYPE += item.other_sec_description_check_311 ? "<br/>" + item.other_sec_description_check_311 : "";
+                                Description_FLOOD_ZONE_TYPE += item.other_sec_description_check_312_other ? "<br/>" + item.other_sec_description_ZONE_Low_risk_z_other : "";
+                                document.getElementById('Description_FLOOD_ZONE_TYPE').innerHTML = "<h4>FLOOD ZONE TYPE</h4>" + Description_FLOOD_ZONE_TYPE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_169) {
+                                var Description_SQUARE_FOOTAGE_HEATED = "";
+                                Description_SQUARE_FOOTAGE_HEATED += item.other_sec_description_SQUARE_FOOTAGE_HEATED;
+                                document.getElementById('Description_SQUARE_FOOTAGE_HEATED').innerHTML = "<h4>SQUARE FOOTAGE HEATED</h4>" + Description_SQUARE_FOOTAGE_HEATED;
+                            }
+
+                            if (!item.information_checkbox_12_NA_170) {
+                                var Description_SQUARE_FOOTAGE_SEPARATE = "";
+                                Description_SQUARE_FOOTAGE_SEPARATE += item.other_sec_description_SQUARE_FOOTAGE_SEPARATE;
+                                document.getElementById('Description_SQUARE_FOOTAGE_SEPARATE').innerHTML = "<h4>SQUARE FOOTAGE SEPARATE</h4>" + Description_SQUARE_FOOTAGE_SEPARATE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_171) {
+                                var Description_PROPERTY_LEVELS = "";
+                                Description_PROPERTY_LEVELS += item.other_sec_description_check_4 ? item.other_sec_description_check_4 : "";
+                                Description_PROPERTY_LEVELS += item.other_sec_description_check_41 ? "<br/>" + item.other_sec_description_check_41 : "";
+                                Description_PROPERTY_LEVELS += item.other_sec_description_check_42 ? "<br/>" + item.other_sec_description_check_42 : "";
+                                Description_PROPERTY_LEVELS += item.other_sec_description_check_43 ? "<br/>" + item.other_sec_description_check_43 : "";
+                                Description_PROPERTY_LEVELS += item.other_sec_description_check_44 ? "<br/>" + item.other_sec_description_check_44 : "";
+                                Description_PROPERTY_LEVELS += item.other_sec_description_check_45 ? "<br/>" + item.other_sec_description_check_45 : "";
+                                Description_PROPERTY_LEVELS += item.other_sec_description_check_46 ? "<br/>" + item.other_sec_description_check_46 : "";
+                                Description_PROPERTY_LEVELS += item.other_sec_description_check_47 ? "<br/>" + item.other_sec_description_check_47 : "";
+                                Description_PROPERTY_LEVELS += item.other_sec_description_check_48 ? "<br/>" + item.other_sec_description_check_48 : "";
+                                Description_PROPERTY_LEVELS += item.other_sec_description_check_49 ? "<br/>" + item.other_sec_description_check_49 : "";
+                                Description_PROPERTY_LEVELS += item.other_sec_description_check_410 ? "<br/>" + item.other_sec_description_check_410 : "";
+                                Description_PROPERTY_LEVELS += item.other_sec_description_check_411 ? "<br/>" + item.other_sec_description_check_411 : "";
+                                Description_PROPERTY_LEVELS += item.other_sec_description_check_412 ? "<br/>" + item.other_sec_description_check_412_textarea : "";
+                                document.getElementById('Description_PROPERTY_LEVELS').innerHTML = "<h4>PROPERTY LEVELS</h4>" + Description_PROPERTY_LEVELS;
+                            }
+
+                            if (!item.information_checkbox_12_NA_172) {
+                                var Description_BASEMENT = "";
+                                Description_BASEMENT += item.other_sec_description_check_5 ? item.other_sec_description_check_5 : "";
+                                Description_BASEMENT += item.other_sec_description_check_51 ? "<br/>" + item.other_sec_description_check_51 : "";
+                                Description_BASEMENT += item.other_sec_description_check_52 ? "<br/>" + item.other_sec_description_check_52 : "";
+                                Description_BASEMENT += item.other_sec_description_check_53 ? "<br/>" + item.other_sec_description_check_53 : "";
+                                Description_BASEMENT += item.other_sec_description_check_54 ? "<br/>" + item.other_sec_description_check_54 : "";
+                                Description_BASEMENT += item.other_sec_description_check_55 ? "<br/>" + item.other_sec_description_check_55 : "";
+                                Description_BASEMENT += item.other_sec_description_check_56 ? "<br/>" + item.other_sec_description_check_56_textarea : "";
+                                document.getElementById('Description_BASEMENT').innerHTML = "<h4>BASEMENT</h4>" + Description_BASEMENT;
+                            }
+
+                            if (!item.information_checkbox_12_NA_173) {
+                                var Description_OF_ROOMS = "";
+                                Description_OF_ROOMS += item.other_sec_description_OF_ROOMS_123;
+                                document.getElementById('Description_OF_ROOMS').innerHTML = "<h4>OF ROOMS</h4>" + Description_OF_ROOMS;
+                            }
+
+                            if (!item.information_checkbox_12_NA_174) {
+                                var Description_GARAGE = "";
+                                if (item.other_sec_description_check_6_select_1_GARAGE == "yes") {
+                                    Description_GARAGE += item.other_sec_description_check_6_select_1_GARAGE_select_garage ? item.other_sec_description_check_6_select_1_GARAGE_select_garage : "";
+                                } else {
+                                    Description_GARAGE += "NO";
+                                }
+                                document.getElementById('Description_GARAGE').innerHTML = "<h4>GARAGE</h4>" + Description_GARAGE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_175) {
+                                var Description_CARPORT = "";
+                                if (item.other_sec_description_check_7_select_1 == "yes") {
+                                    Description_CARPORT += item.other_sec_description_check_7_select_1_CARPORT_garage ? item.other_sec_description_check_7_select_1_CARPORT_garage : "";
+                                } else {
+                                    Description_CARPORT += "NO";
+                                }
+                                document.getElementById('Description_CARPORT').innerHTML = "<h4>CARPORT</h4>" + Description_CARPORT;
+                            }
+
+                            if (!item.information_checkbox_12_NA_176) {
+                                var Description_PORCH_BALCONY_DECK = "";
+                                Description_PORCH_BALCONY_DECK += item.other_sec_description_check_8 ? item.other_sec_description_check_8 : "";
+                                Description_PORCH_BALCONY_DECK += item.other_sec_description_check_81 ? "<br/>" + item.other_sec_description_check_81 : "";
+                                Description_PORCH_BALCONY_DECK += item.other_sec_description_check_82 ? "<br/>" + item.other_sec_description_check_82 : "";
+                                Description_PORCH_BALCONY_DECK += item.other_sec_description_check_83 ? "<br/>" + item.other_sec_description_check_83 : "";
+                                Description_PORCH_BALCONY_DECK += item.other_sec_description_check_84 ? "<br/>" + item.other_sec_description_check_84 : "";
+                                Description_PORCH_BALCONY_DECK += item.other_sec_description_check_85 ? "<br/>" + item.other_sec_description_check_85 : "";
+                                Description_PORCH_BALCONY_DECK += item.other_sec_description_check_86 ? "<br/>" + item.other_sec_description_check_86 : "";
+                                Description_PORCH_BALCONY_DECK += item.other_sec_description_check_87 ? "<br/>" + item.other_sec_description_check_87 : "";
+                                Description_PORCH_BALCONY_DECK += item.other_sec_description_check_88 ? "<br/>" + item.other_sec_description_check_88 : "";
+                                Description_PORCH_BALCONY_DECK += item.other_sec_description_check_89 ? "<br/>" + item.other_sec_description_check_89 : "";
+                                Description_PORCH_BALCONY_DECK += item.other_sec_description_check_810 ? "<br/>" + item.other_sec_description_check_810_textarea : "";
+                                document.getElementById('Description_PORCH_BALCONY_DECK').innerHTML = "<h4>PORCH /BALCONY /DECK</h4>" + Description_PORCH_BALCONY_DECK;
+                            }
+
+                            if (!item.information_checkbox_12_NA_177) {
+                                var Description_ROOF = "";
+                                Description_ROOF += item.other_sec_description_check_9 ? item.other_sec_description_check_9 : "";
+                                Description_ROOF += item.other_sec_description_check_91 ? "<br/>" + item.other_sec_description_check_91 : "";
+                                Description_ROOF += item.other_sec_description_check_92 ? "<br/>" + item.other_sec_description_check_92 : "";
+                                Description_ROOF += item.other_sec_description_check_93 ? "<br/>" + item.other_sec_description_check_93 : "";
+                                Description_ROOF += item.other_sec_description_check_94 ? "<br/>" + item.other_sec_description_check_94 : "";
+                                Description_ROOF += item.other_sec_description_check_95 ? "<br/>" + item.other_sec_description_check_95 : "";
+                                Description_ROOF += item.other_sec_description_check_96 ? "<br/>" + item.other_sec_description_check_96 : "";
+                                Description_ROOF += item.other_sec_description_check_97 ? "<br/>" + item.other_sec_description_check_97 : "";
+                                Description_ROOF += item.other_sec_description_check_98 ? "<br/>" + item.other_sec_description_check_98 : "";
+                                Description_ROOF += item.other_sec_description_check_99 ? "<br/>" + item.other_sec_description_check_99_textarea : "";
+                                document.getElementById('Description_ROOF').innerHTML = "<h4>ROOF</h4>" + Description_ROOF;
+                            }
+
+                            if (!item.information_checkbox_12_NA_178) {
+                                var Description_OF_FULL_BATHS = "";
+                                Description_OF_FULL_BATHS += item.information_OF_FULL_BATHS_show_1;
+                                document.getElementById('Description_OF_FULL_BATHS').innerHTML = "<h4>OF FULL BATHS</h4>" + Description_OF_FULL_BATHS;
+                            }
+
+                            if (!item.information_checkbox_12_NA_179) {
+                                var Description_OF_1_2_BATHS = "";
+                                Description_OF_1_2_BATHS += item.information_OF_1_2_BATHS_show_1;
+                                document.getElementById('Description_OF_1_2_BATHS').innerHTML = "<h4>OF 1/2 BATHS</h4>" + Description_OF_1_2_BATHS;
+                            }
+
+                            if (!item.information_checkbox_12_NA_180) {
+                                var Description_OF_BEDROOMS = "";
+                                Description_OF_BEDROOMS += item.information_bedroom_show_1;
+                                document.getElementById('Description_OF_BEDROOMS').innerHTML = "<h4>OF BEDROOMS</h4>" + Description_OF_BEDROOMS;
+                            }
+
+                            if (!item.information_checkbox_12_NA_181) {
+                                var Description_MASTER_BEDROOM_LOCATION = "";
+                                if (item.other_sec_description_textarea_3 == "other") {
+                                    Description_MASTER_BEDROOM_LOCATION += item.other_sec_description_textarea_3_desc ? item.other_sec_description_textarea_3_desc : "";
+                                } else {
+                                    Description_MASTER_BEDROOM_LOCATION += item.other_sec_description_textarea_3;
+                                }
+                                document.getElementById('Description_MASTER_BEDROOM_LOCATION').innerHTML = "<h4>MASTER BEDROOM LOCATION</h4>" + Description_MASTER_BEDROOM_LOCATION;
+                            }
+
+                            if (!item.information_checkbox_12_NA_182) {
+                                var Description_PROPERTY_STORIES = "";
+                                Description_PROPERTY_STORIES += item.information_checkbox_PROPERTY_STORIES_1;
+                                document.getElementById('Description_PROPERTY_STORIES').innerHTML = "<h4>PROPERTY STORIES</h4>" + Description_PROPERTY_STORIES;
+                            }
+
+                            if (!item.information_checkbox_12_NA_183) {
+                                var Description_HEATING_SOURCE_1 = "";
+                                Description_HEATING_SOURCE_1 += item.next_other_check_1 ? item.next_other_check_1 : "";
+                                Description_HEATING_SOURCE_1 += item.next_other_check_11 ? "<br/>" + item.next_other_check_11 : "";
+                                Description_HEATING_SOURCE_1 += item.next_other_check_12 ? "<br/>" + item.next_other_check_12 : "";
+                                Description_HEATING_SOURCE_1 += item.next_other_check_13 ? "<br/>" + item.next_other_check_13 : "";
+                                Description_HEATING_SOURCE_1 += item.next_other_check_14 ? "<br/>" + item.next_other_check_14 : "";
+                                Description_HEATING_SOURCE_1 += item.next_other_check_15 ? "<br/>" + item.next_other_check_15 : "";
+                                Description_HEATING_SOURCE_1 += item.next_other_check_16 ? "<br/>" + item.next_other_check_16 : "";
+                                Description_HEATING_SOURCE_1 += item.next_other_check_17 ? "<br/>" + item.next_other_check_17 : "";
+                                Description_HEATING_SOURCE_1 += item.next_other_check_18 ? "<br/>" + item.next_other_check_18_textarea : "";
+                                document.getElementById('Description_HEATING_SOURCE_1').innerHTML = "<h4>HEATING SOURCE 1</h4>" + Description_HEATING_SOURCE_1;
+                            }
+
+                            if (!item.information_checkbox_12_NA_184) {
+                                var Description_HEATING_SOURCE_2 = "";
+                                Description_HEATING_SOURCE_2 += item.next_other_check_2 ? item.next_other_check_2 : "";
+                                Description_HEATING_SOURCE_2 += item.next_other_check_21 ? "<br/>" + item.next_other_check_21 : "";
+                                Description_HEATING_SOURCE_2 += item.next_other_check_21123 ? "<br/>" + item.next_other_check_21123_textarea : "";
+                                document.getElementById('Description_HEATING_SOURCE_2').innerHTML = "<h4>HEATING SOURCE 2</h4>" + Description_HEATING_SOURCE_2;
+                            }
+
+                            if (!item.information_checkbox_12_NA_185) {
+                                var Description_INTERIOR_HEATING_SOURCE = "";
+                                Description_INTERIOR_HEATING_SOURCE += item.next_other_check_22 ? item.next_other_check_22 : "";
+                                Description_INTERIOR_HEATING_SOURCE += item.next_other_check_23 ? "<br/>" + item.next_other_check_23 : "";
+                                Description_INTERIOR_HEATING_SOURCE += item.next_other_check_24 ? "<br/>" + item.next_other_check_24 : "";
+                                Description_INTERIOR_HEATING_SOURCE += item.next_other_check_26 ? "<br/>" + item.next_other_check_26 : "";
+                                Description_INTERIOR_HEATING_SOURCE += item.next_other_check_25 ? "<br/>" + item.next_other_check_25_textarea : "";
+                                document.getElementById('Description_INTERIOR_HEATING_SOURCE').innerHTML = "<h4>INTERIOR HEATING SOURCE</h4>" + Description_INTERIOR_HEATING_SOURCE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_186) {
+                                var Description_INTERIOR_COOLING = "";
+                                Description_INTERIOR_COOLING += item.next_other_check_3 ? item.next_other_check_3 : "";
+                                Description_INTERIOR_COOLING += item.next_other_check_31 ? "<br/>" + item.next_other_check_31 : "";
+                                Description_INTERIOR_COOLING += item.next_other_check_32 ? "<br/>" + item.next_other_check_32 : "";
+                                Description_INTERIOR_COOLING += item.next_other_check_34 ? "<br/>" + item.next_other_check_34 : "";
+                                Description_INTERIOR_COOLING += item.next_other_check_33 ? "<br/>" + item.next_other_check_33_textarea : "";
+                                document.getElementById('Description_INTERIOR_COOLING').innerHTML = "<h4>INTERIOR COOLING</h4>" + Description_INTERIOR_COOLING;
+                            }
+
+                            if (!item.information_checkbox_12_NA_188u) {
+                                var Description_WATER = "";
+                                Description_WATER += item.next_other_check_4 ? item.next_other_check_4 : "";
+                                Description_WATER += item.next_other_check_41 ? "<br/>" + item.next_other_check_41 : "";
+                                Description_WATER += item.next_other_check_43 ? "<br/>" + item.next_other_check_43 : "";
+                                Description_WATER += item.next_other_check_42 ? "<br/>FILL IN DEPTH:" + item.next_other_check_41_descrip_DEPTH + "FILL IN DATE INSTALLED:" + item.next_other_check_41_descrip_DATE_INSTALLED : "";
+                                document.getElementById('Description_WATER').innerHTML = "<h4>WATER</h4>" + Description_WATER;
+                            }
+
+                            if (!item.information_checkbox_12_NA_188) {
+                                var Description_SEWER = "";
+                                Description_SEWER += item.next_other_check_44 ? item.next_other_check_44 : "";
+                                Description_SEWER += item.next_other_check_45 ? "<br/>" + item.next_other_check_45 : "";
+                                Description_SEWER += item.next_other_check_46 ? "<br/>" + item.next_other_check_46 : "";
+                                Description_SEWER += item.next_other_check_48 ? "<br/>" + item.next_other_check_48 : "";
+                                Description_SEWER += item.next_other_check_47 ? "<br/>DATE INSTALLED:" + item.next_other_check_45_descrip_DATE_INSTALLED + "WHEN LAST EMPTIED:" + item.next_other_check_45_descrip_WHEN_LAST_EMPTIED : "";
+                                document.getElementById('Description_SEWER').innerHTML = "<h4>SEWER</h4>" + Description_SEWER;
+                            }
+
+                            if (!item.information_checkbox_12_NA_190) {
+                                var Description_ELECTRIC = "";
+                                Description_ELECTRIC += item.next_other_check_5 ? item.next_other_check_5 : "";
+                                Description_ELECTRIC += item.next_other_check_51 ? "<br/>" + item.next_other_check_51 : "";
+                                Description_ELECTRIC += item.next_other_check_52 ? "<br/>" + item.next_other_check_52_textarea : "";
+                                Description_ELECTRIC += item.next_other_check_53 ? "<br/>" + item.next_other_check_53 : "";
+                                Description_ELECTRIC += item.next_other_check_54 ? "<br/>" + item.next_other_check_54 : "";
+                                Description_ELECTRIC += item.next_other_check_55 ? "<br/>" + item.next_other_check_55 : "";
+                                document.getElementById('Description_ELECTRIC').innerHTML = "<h4>ELECTRIC</h4>" + Description_ELECTRIC;
+                            }
+
+                            if (!item.information_checkbox_12_NA_191) {
+                                var Description_POOL_SPA = "";
+                                Description_POOL_SPA += item.next_other_check_56 ? item.next_other_check_56 : "";
+                                Description_POOL_SPA += item.next_other_check_57 ? "<br/>" + item.next_other_check_57 : "";
+                                Description_POOL_SPA += item.next_other_check_58 ? "<br/>" + item.next_other_check_58 : "";
+                                Description_POOL_SPA += item.next_other_check_59 ? "<br/>" + item.next_other_check_59 : "";
+                                Description_POOL_SPA += item.next_other_check_510 ? "<br/>" + item.next_other_check_510 : "";
+                                Description_POOL_SPA += item.next_other_check_511 ? "<br/>" + item.next_other_check_511 : "";
+                                Description_POOL_SPA += item.next_other_check_512 ? "<br/>" + item.next_other_check_512_textarea : "";
+                                document.getElementById('Description_POOL_SPA').innerHTML = "<h4>POOL SPA</h4>" + Description_POOL_SPA;
+                            }
+
+                            if (!item.information_checkbox_12_NA_192) {
+                                var Description_PETS = "";
+                                Description_PETS += item.next_other_check_513 ? item.next_other_check_513 : "";
+                                Description_PETS += item.next_other_check_514 ? "<br/>" + item.next_other_check_514 : "";
+                                Description_PETS += item.next_other_check_515 ? "<br/>" + item.next_other_check_515_textarea : "";
+                                document.getElementById('Description_PETS').innerHTML = "<h4>PETS</h4>" + Description_PETS;
+                            }
+
+                            if (!item.information_checkbox_12_NA_193) {
+                                var Description_COMMUNITY_AMENITIES = "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_6 ? item.next_other_check_6 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_61 ? "<br/>" + item.next_other_check_61 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_62 ? "<br/>" + item.next_other_check_62 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_63 ? "<br/>" + item.next_other_check_63 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_64 ? "<br/>" + item.next_other_check_64 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_65 ? "<br/>" + item.next_other_check_65 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_66 ? "<br/>" + item.next_other_check_66 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_67 ? "<br/>" + item.next_other_check_67 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_68 ? "<br/>" + item.next_other_check_68 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_69 ? "<br/>" + item.next_other_check_69 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_610 ? "<br/>" + item.next_other_check_610 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_611 ? "<br/>" + item.next_other_check_611 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_612 ? "<br/>" + item.next_other_check_612 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_613 ? "<br/>" + item.next_other_check_613 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_614 ? "<br/>" + item.next_other_check_614 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_615 ? "<br/>" + item.next_other_check_615 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_616 ? "<br/>" + item.next_other_check_616 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_617 ? "<br/>" + item.next_other_check_617 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_618 ? "<br/>" + item.next_other_check_618 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_619 ? "<br/>" + item.next_other_check_619 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_620 ? "<br/>" + item.next_other_check_620 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_621 ? "<br/>" + item.next_other_check_621 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_622 ? "<br/>" + item.next_other_check_622 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_623 ? "<br/>" + item.next_other_check_623 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_624 ? "<br/>" + item.next_other_check_624 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_625 ? "<br/>" + item.next_other_check_625 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_626 ? "<br/>" + item.next_other_check_626 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_627 ? "<br/>" + item.next_other_check_627 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_628 ? "<br/>" + item.next_other_check_628 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_629 ? "<br/>" + item.next_other_check_629 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_630 ? "<br/>" + item.next_other_check_630 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_631 ? "<br/>" + item.next_other_check_631 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_632 ? "<br/>" + item.next_other_check_632 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_633 ? "<br/>" + item.next_other_check_633 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_634 ? "<br/>" + item.next_other_check_634 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_635 ? "<br/>" + item.next_other_check_635 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_636 ? "<br/>" + item.next_other_check_636 : "";
+                                Description_COMMUNITY_AMENITIES += item.next_other_check_637 ? "<br/>" + item.next_other_check_637_textarea : "";
+                                document.getElementById('Description_COMMUNITY_AMENITIES').innerHTML = "<h4>COMMUNITY AMENITIES</h4>" + Description_COMMUNITY_AMENITIES;
+                            }
+
+                            if (!item.information_checkbox_12_NA_194) {
+                                var Description_EXTERIOR_FEATURES = "";
+                                Description_EXTERIOR_FEATURES += item.next_other_check_7 ? item.next_other_check_7 : "";
+                                Description_EXTERIOR_FEATURES += item.next_other_check_71 ? "<br/>" + item.next_other_check_71 : "";
+                                Description_EXTERIOR_FEATURES += item.next_other_check_72 ? "<br/>" + item.next_other_check_72 : "";
+                                Description_EXTERIOR_FEATURES += item.next_other_check_73 ? "<br/>" + item.next_other_check_73 : "";
+                                Description_EXTERIOR_FEATURES += item.next_other_check_74 ? "<br/>" + item.next_other_check_74 : "";
+                                Description_EXTERIOR_FEATURES += item.next_other_check_75 ? "<br/>" + item.next_other_check_75 : "";
+                                Description_EXTERIOR_FEATURES += item.next_other_check_76 ? "<br/>" + item.next_other_check_76 : "";
+                                Description_EXTERIOR_FEATURES += item.next_other_check_77 ? "<br/>" + item.next_other_check_77 : "";
+                                Description_EXTERIOR_FEATURES += item.next_other_check_78 ? "<br/>" + item.next_other_check_78 : "";
+                                Description_EXTERIOR_FEATURES += item.next_other_check_79 ? "<br/>" + item.next_other_check_79 : "";
+                                Description_EXTERIOR_FEATURES += item.next_other_check_710 ? "<br/>" + item.next_other_check_710 : "";
+                                Description_EXTERIOR_FEATURES += item.next_other_check_711 ? "<br/>" + item.next_other_check_711 : "";
+                                Description_EXTERIOR_FEATURES += item.next_other_check_712 ? "<br/>" + item.next_other_check_712_textarea : "";
+                                document.getElementById('Description_EXTERIOR_FEATURES').innerHTML = "<h4>EXTERIOR FEATURES</h4>" + Description_EXTERIOR_FEATURES;
+                            }
+
+                            if (!item.information_checkbox_12_NA_195) {
+                                var Description_EXTERIOR_FINISHES = "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_8 ? item.next_other_check_8 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_81 ? "<br/>" + item.next_other_check_81 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_82 ? "<br/>" + item.next_other_check_82 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_83 ? "<br/>" + item.next_other_check_83 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_84 ? "<br/>" + item.next_other_check_84 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_85 ? "<br/>" + item.next_other_check_85 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_86 ? "<br/>" + item.next_other_check_86 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_87 ? "<br/>" + item.next_other_check_87 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_88 ? "<br/>" + item.next_other_check_88 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_89 ? "<br/>" + item.next_other_check_89 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_810 ? "<br/>" + item.next_other_check_810 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_811 ? "<br/>" + item.next_other_check_811 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_812 ? "<br/>" + item.next_other_check_812 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_813 ? "<br/>" + item.next_other_check_813 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_814 ? "<br/>" + item.next_other_check_814 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_815 ? "<br/>" + item.next_other_check_815 : "";
+                                Description_EXTERIOR_FINISHES += item.next_other_check_816 ? "<br/>" + item.next_other_check_816_textarea : "";
+                                document.getElementById('Description_EXTERIOR_FINISHES').innerHTML = "<h4>EXTERIOR FINISHES</h4>" + Description_EXTERIOR_FINISHES;
+                            }
+
+                            if (!item.information_checkbox_12_NA_196) {
+                                var Description_FENCING = "";
+                                Description_FENCING += item.next_other_check_9 ? item.next_other_check_9 : "";
+                                Description_FENCING += item.next_other_check_91 ? item.next_other_check_91 : "";
+                                Description_FENCING += item.next_other_check_92 ? item.next_other_check_92 : "";
+                                Description_FENCING += item.next_other_check_93 ? item.next_other_check_93 : "";
+                                Description_FENCING += item.next_other_check_94 ? item.next_other_check_94 : "";
+                                Description_FENCING += item.next_other_check_95 ? item.next_other_check_95 : "";
+                                Description_FENCING += item.next_other_check_96 ? item.next_other_check_96 : "";
+                                Description_FENCING += item.next_other_check_97 ? item.next_other_check_97 : "";
+                                Description_FENCING += item.next_other_check_98 ? item.next_other_check_98 : "";
+                                Description_FENCING += item.next_other_check_99 ? item.next_other_check_99 : "";
+                                Description_FENCING += item.next_other_check_910 ? item.next_other_check_910_textarea : "";
+                                document.getElementById('Description_FENCING').innerHTML = "<h4>FENCING</h4>" + Description_FENCING;
+                            }
+
+                            if (!item.information_checkbox_12_NA_197) {
+                                var Description_ATTIC_SPACE = "";
+                                Description_ATTIC_SPACE += item.next_other_check_911 ? item.next_other_check_911 : "";
+                                Description_ATTIC_SPACE += item.next_other_check_912 ? "<br/>" + item.next_other_check_912 : "";
+                                Description_ATTIC_SPACE += item.next_other_check_913 ? "<br/>" + item.next_other_check_913 : "";
+                                Description_ATTIC_SPACE += item.next_other_check_914 ? "<br/>" + item.next_other_check_914 : "";
+                                Description_ATTIC_SPACE += item.next_other_check_915 ? "<br/>" + item.next_other_check_915 : "";
+                                Description_ATTIC_SPACE += item.next_other_check_916 ? "<br/>" + item.next_other_check_916 : "";
+                                Description_ATTIC_SPACE += item.next_other_check_917 ? "<br/>" + item.next_other_check_917 : "";
+                                Description_ATTIC_SPACE += item.next_other_check_918 ? "<br/>" + item.next_other_check_918 : "";
+                                Description_ATTIC_SPACE += item.next_other_check_919 ? "<br/>" + item.next_other_check_919 : "";
+                                Description_ATTIC_SPACE += item.next_other_check_920 ? "<br/>" + item.next_other_check_920_textarea : "";
+                                document.getElementById('Description_ATTIC_SPACE').innerHTML = "<h4>ATTIC SPACE</h4>" + Description_ATTIC_SPACE;
+                            }
+
+                            if (!item.information_checkbox_12_NA_198) {
+                                var Description_BOAT_SLIP = "";
+                                if (item.next_2_other_text_select == "yes") {
+                                    Description_BOAT_SLIP += item.next_2_other_text_Length ? item.next_2_other_text_Length : " ";
+                                    Description_BOAT_SLIP += item.next_2_other_text_width_1 ? item.next_2_other_text_width_1 : " ";
+                                } else {
+                                    Description_BOAT_SLIP += "No";
+                                }
+                                document.getElementById('Description_BOAT_SLIP').innerHTML = "<h4>BOAT SLIP</h4>" + Description_BOAT_SLIP;
+                            }
+
+                            if (!item.information_checkbox_12_NA_199) {
+                                var Description_MEAN_HIGH_WATER_DEPTH = "";
+                                Description_BOAT_SLIP += item.next_2_other_text_MEAN_HIGH_WATER_DEPTH;
+                                document.getElementById('Description_MEAN_HIGH_WATER_DEPTH').innerHTML = "<h4>MEAN HIGH WATER DEPTH</h4>" + Description_MEAN_HIGH_WATER_DEPTH;
+                            }
+
+                            if (!item.information_checkbox_12_NA_1100) {
+                                var Description_BUILDING_GREEN_CERTIFIED = "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_1 ? item.next_2_other_check_1 : "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_11 ? "<br/>" + item.next_2_other_check_11 : "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_12 ? "<br/>" + item.next_2_other_check_12 : "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_13 ? "<br/>" + item.next_2_other_check_13 : "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_14 ? "<br/>" + item.next_2_other_check_14 : "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_15 ? "<br/>" + item.next_2_other_check_15 : "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_16 ? "<br/>" + item.next_2_other_check_16 : "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_17 ? "<br/>" + item.next_2_other_check_17 : "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_18 ? "<br/>" + item.next_2_other_check_18 : "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_19 ? "<br/>" + item.next_2_other_check_19 : "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_110 ? "<br/>" + item.next_2_other_check_110 : "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_111 ? "<br/>" + item.next_2_other_check_111 : "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_112 ? "<br/>" + item.next_2_other_check_112 : "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_113 ? "<br/>" + item.next_2_other_check_113 : "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_114 ? "<br/>" + item.next_2_other_check_114 : "";
+                                Description_BUILDING_GREEN_CERTIFIED += item.next_2_other_check_115 ? "<br/>" + item.next_2_other_check_115_textarea : "";
+                                document.getElementById('Description_BUILDING_GREEN_CERTIFIED').innerHTML = "<h4>BUILDING GREEN CERTIFIED</h4>" + Description_BUILDING_GREEN_CERTIFIED;
+                            }
+
+                            if (!item.information_checkbox_12_NA_1101) {
+                                var Description_GREEN_BUILDING_FEATURES = "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_2 ? item.next_2_other_check_2 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_21 ? "<br/>" + item.next_2_other_check_21 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_22 ? "<br/>" + item.next_2_other_check_22 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_23 ? "<br/>" + item.next_2_other_check_23 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_24 ? "<br/>" + item.next_2_other_check_24 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_25 ? "<br/>" + item.next_2_other_check_25 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_26 ? "<br/>" + item.next_2_other_check_26 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_27 ? "<br/>" + item.next_2_other_check_27 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_28 ? "<br/>" + item.next_2_other_check_28 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_29 ? "<br/>" + item.next_2_other_check_29 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_210 ? "<br/>" + item.next_2_other_check_210 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_211 ? "<br/>" + item.next_2_other_check_211 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_212 ? "<br/>" + item.next_2_other_check_212 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_213 ? "<br/>" + item.next_2_other_check_213 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_214 ? "<br/>" + item.next_2_other_check_214 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_215 ? "<br/>" + item.next_2_other_check_215 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_216 ? "<br/>" + item.next_2_other_check_216 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_217 ? "<br/>" + item.next_2_other_check_217 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_218 ? "<br/>" + item.next_2_other_check_218 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_219 ? "<br/>" + item.next_2_other_check_219 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_220 ? "<br/>" + item.next_2_other_check_220 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_221 ? "<br/>" + item.next_2_other_check_221 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_222 ? "<br/>" + item.next_2_other_check_222 : "";
+                                Description_GREEN_BUILDING_FEATURES += item.next_2_other_check_223 ? "<br/>" + item.next_2_other_check_223_textarea : "";
+                                document.getElementById('Description_GREEN_BUILDING_FEATURES').innerHTML = "<h4>GREEN BUILDING FEATURES</h4>" + Description_GREEN_BUILDING_FEATURES;
+                            }
+
+
+                            // SHOWING INSTRUCTIONS tab
+                            if (!item.information_checkbox_12_NA_1102) {
+                                var Instruction_SHOWING_INSTRUCTIONS = "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_11 ? item.Instructions_checkbox_11 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_12 ? "<br/>" + item.Instructions_checkbox_12 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_13 ? "<br/>" + item.Instructions_checkbox_13 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_14 ? "<br/>" + item.Instructions_checkbox_14 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_15 ? "<br/>" + item.Instructions_checkbox_15 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_16 ? "<br/>" + item.Instructions_checkbox_16 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_17 ? "<br/>" + item.Instructions_checkbox_17 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_18 ? "<br/>" + item.Instructions_checkbox_18 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_19 ? "<br/>" + item.Instructions_checkbox_19 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_111 ? "<br/>" + item.Instructions_checkbox_111 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_112 ? "<br/>" + item.Instructions_checkbox_112 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_113 ? "<br/>" + item.Instructions_checkbox_113 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_114 ? "<br/>" + item.Instructions_checkbox_114 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_115 ? "<br/>" + item.Instructions_checkbox_115 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_116 ? "<br/>" + item.Instructions_checkbox_116 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_117 ? "<br/>" + item.Instructions_checkbox_117 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_118 ? "<br/>" + item.Instructions_checkbox_118 : "";
+                                Instruction_SHOWING_INSTRUCTIONS += item.Instructions_checkbox_119 ? "<br/>" + item.Instructions_checkbox_119 : "";
+                                document.getElementById('Instruction_SHOWING_INSTRUCTIONS').innerHTML = "<h4> SHOWING INSTRUCTIONS</h4>" + Instruction_SHOWING_INSTRUCTIONS;
+                            }
+
+                            // LISTING DISTRIBUTION tab
+                            if (!item.information_checkbox_12_NA_1104) {
+                                var listin_SELLER_OPT_OUT = "";
+                                listin_SELLER_OPT_OUT += item.Distribution_checkbox_11 ? item.Distribution_checkbox_11 : "";
+                                listin_SELLER_OPT_OUT += item.Distribution_checkbox_12 ? "<br/>" + item.Distribution_checkbox_12 : "";
+                                listin_SELLER_OPT_OUT += item.Distribution_checkbox_13 ? "<br/>" + item.Distribution_checkbox_13 : "";
+                                listin_SELLER_OPT_OUT += item.Distribution_checkbox_14 ? "<br/>" + item.Distribution_checkbox_14 : "";
+                                document.getElementById('listin_SELLER_OPT_OUT').innerHTML = "<h4> SELLER OPT OUT</h4>" + listin_SELLER_OPT_OUT;
+                            }
+
+                            if (!item.information_checkbox_12_NA_1105) {
+                                var listin_SELLER_OPT_IN = "";
+                                listin_SELLER_OPT_IN += item.Distribution_checkbox_21 ? item.Distribution_checkbox_21 : "";
+                                document.getElementById('listin_SELLER_OPT_IN').innerHTML = "<h4> SELLER OPT IN</h4>" + listin_SELLER_OPT_IN;
+                            }
+
+                            if (!item.information_checkbox_12_NA_1106) {
+                                var listin_OUTSIDE_DISTRIBUTION = "";
+                                listin_OUTSIDE_DISTRIBUTION += item.Distribution_checkbox_31 ? item.Distribution_checkbox_31 : "";
+                                listin_OUTSIDE_DISTRIBUTION += item.Distribution_checkbox_32 ? "<br/>" + item.Distribution_checkbox_32 : "";
+                                listin_OUTSIDE_DISTRIBUTION += item.Distribution_checkbox_33 ? "<br/>" + item.Distribution_checkbox_33 : "";
+                                listin_OUTSIDE_DISTRIBUTION += item.Distribution_checkbox_34 ? "<br/>" + item.Distribution_checkbox_34 : "";
+                                listin_OUTSIDE_DISTRIBUTION += item.Distribution_checkbox_35 ? "<br/>" + item.Distribution_checkbox_35 : "";
+                                document.getElementById('listin_OUTSIDE_DISTRIBUTION').innerHTML = "<h4> OUTSIDE DISTRIBUTION</h4>" + listin_OUTSIDE_DISTRIBUTION;
+                            }
+
+                            var lat_value = 0;
+                            var long_value = 0;
+                            if (!item.information_checkbox_12_NA_124_GPS_LOCATION_LIN) {
+                                var property_address_geo_long_GPS_LOCATION_LIN = "";
+                                property_address_geo_long_GPS_LOCATION_LIN += item.property_address_geo_long_GPS_LOCATION_LIN ? item.property_address_geo_long_GPS_LOCATION_LIN : "";
+                                if (item.property_address_geo_long_GPS_LOCATION_LIN) {
+                                    gps_location += item.property_address_geo_long_GPS_LOCATION_LIN ? item.property_address_geo_long_GPS_LOCATION_LIN : "";
+                                    $("#googleMap").css("display", "none")
+
+                                    gps_location_link_flag = true
+
+
+                                    // document.getElementById('get_geo_location_from_database').innerHTML = "<h4>GEO Location</h4><div  style=' word-wrap: break-word;'><a href='" + gps_location + "' target='_blank'>" + gps_location + "</a><br/><button onclick='show_google_map_new_win()' class='save-form-btn button' >Show Google Map</button></div>";
+
+                                    // var str = "https://www.google.com/maps/place/100+Manning+Dr,+Chapel+Hill,+NC+27514/@35.905151,-79.0524843,17z/data=!4m5!3m4!1s0x89acc2efa4d7cfa9:0x47ba4eef0885a757!8m2!3d35.9052172!4d-79.0508267?hl=en-US";
+                                    // var str = item.property_address_geo_long_GPS_LOCATION_LIN;
+                                    // var res = str.split("@");
+                                    // var res_2 = res[1].split("data");
+                                    // var res_3 = res_2[0].split(",");
+
+                                    // lat_value = parseInt(res_3[0]);
+                                    // long_value = parseInt(res_3[1]);
+                                    // draw_google_map(lat_value, long_value);
+                                } else {
+                                    gps_location_link_flag = false
+
+                                    gps_location += item.property_address_geo_lat ? "LAT: " + item.property_address_geo_lat + "<br/>" : "";
+                                    gps_location += item.property_address_geo_long ? "LONG: " + item.property_address_geo_long : "";
+                                    document.getElementById('get_geo_location_from_database').innerHTML = "<h4>GEO Location</h4><div style=' word-wrap: break-word;'>" + gps_location + "</div>";
+
+                                    lat_value = parseInt(item.property_address_geo_lat);
+                                    long_value = parseInt(item.property_address_geo_long);
+                                    draw_google_map(lat_value, long_value);
+                                }
+                            } else {
+                                gps_location_link_flag = false
+
+                                if (!item.information_checkbox_12_NA_123) {
+                                    var ADDRESS_GEO_LAT = "";
+                                    ADDRESS_GEO_LAT += item.property_address_geo_lat ? item.property_address_geo_lat : "";
+                                    // document.getElementById('ADDRESS_GEO_LAT').innerHTML = "<h4>GEO LAT</h4>" + ADDRESS_GEO_LAT;
+                                }
+
+                                if (!item.information_checkbox_12_NA_124) {
+                                    var ADDRESS_GEO_LONG = "";
+                                    ADDRESS_GEO_LONG += item.property_address_geo_long ? item.property_address_geo_long : "";
+                                    // document.getElementById('ADDRESS_GEO_LONG').innerHTML = "<h4>GEO LONG</h4>" + ADDRESS_GEO_LONG;
+                                }
+                                document.getElementById('get_geo_location_from_database').innerHTML = "<h4>GEO Location</h4><div style=' word-wrap: break-word;'>" + gps_location + "</div>";
+
+                                lat_value = parseInt(item.property_address_geo_lat);
+                                long_value = parseInt(item.property_address_geo_long);
+                                draw_google_map(lat_value, long_value);
+                            }
+
+
+
+
+                        }
+                    })
+                }
+            });
+        }
+
+        function data_include_div_format() {
+            document.getElementById('Broker_Broker_Agent').innerHTML = "";
+            document.getElementById('Broker_Co_Listing_Agent').innerHTML = "";
+            document.getElementById('Broker_Broker').innerHTML = "";
+            document.getElementById('Broker_Listing_Date').innerHTML = "";
+            document.getElementById('Broker_Selling_Commission').innerHTML = "";
+            document.getElementById('Broker_Buying_Agent_Commission').innerHTML = "";
+            document.getElementById('Broker_Sellers_Agreement_Type').innerHTML = "";
+            document.getElementById('Broker_Prospect_Exempt').innerHTML = "";
+            document.getElementById('Broker_Agreement_Services').innerHTML = "";
+
+            document.getElementById('Information_PROPERTY_INFORMATION').innerHTML = "";
+            document.getElementById('Information_PURCHASE_OPTIONS').innerHTML = "";
+            document.getElementById('Information_Buying_Agent_Commission').innerHTML = "";
+            document.getElementById('Information_SELLER_REPRESENTATION').innerHTML = "";
+            document.getElementById('Information_POSSESSION').innerHTML = "";
+            document.getElementById('Information_AUCTION').innerHTML = "";
+            document.getElementById('Information_STIPULATION_OF_SALE').innerHTML = "";
+            document.getElementById('Information_HOME_WARRANTY').innerHTML = "";
+            document.getElementById('Information_TERMITE_BOND').innerHTML = "";
+
+            document.getElementById('Type_PROPERTY_CATEGORY_1').innerHTML = "";
+            document.getElementById('Type_PROPERTY_CATEGORY_2').innerHTML = "";
+            document.getElementById('Type_LEGAL_TAXES').innerHTML = "";
+            document.getElementById('Type_OWNER_OWNERS').innerHTML = "";
+            document.getElementById('Type_Deed_Book').innerHTML = "";
+            document.getElementById('Type_Broker_Owner').innerHTML = "";
+            document.getElementById('Type_Deed_Page').innerHTML = "";
+            document.getElementById('Type_PID').innerHTML = "";
+            document.getElementById('Type_Plat_Book').innerHTML = "";
+            document.getElementById('Type_Plat_Page').innerHTML = "";
+            document.getElementById('Type_Land_Lot').innerHTML = "";
+            document.getElementById('Type_Special_Assessment').innerHTML = "";
+            document.getElementById('Type_Tax_Year').innerHTML = "";
+            document.getElementById('Type_Zoning').innerHTML = "";
+            document.getElementById('Type_TOTAL_REAL_ESTATE_PROPERTY_TAX').innerHTML = "";
+            document.getElementById('Type_SALE_PRICE').innerHTML = "";
+            document.getElementById('Type_LEASE_PRICE').innerHTML = "";
+            document.getElementById('Type_LEASE_GROSS_YEARLY_INCOME').innerHTML = "";
+
+
+            document.getElementById('ADDRESS_STREET_ADDRESS').innerHTML = "";
+            document.getElementById('ADDRESS_GEO_LAT').innerHTML = "";
+            document.getElementById('ADDRESS_GEO_LONG').innerHTML = "";
+            document.getElementById('ADDRESS_CITY_LIMITS').innerHTML = "";
+            document.getElementById('ADDRESS_HISTORIC_DISTRICT').innerHTML = "";
+            document.getElementById('ADDRESS_SUBDIVISION').innerHTML = "";
+            document.getElementById('ADDRESS_SECONDARY_SUBDIVISION').innerHTML = "";
+            document.getElementById('ADDRESS_HOA').innerHTML = "";
+            document.getElementById('ADDRESS_HOA_INITIATION_FEE').innerHTML = "";
+            document.getElementById('ADDRESS_HOA_MONTHLY_FEE').innerHTML = "";
+            document.getElementById('ADDRESS_SCHOOL_DISTRICT').innerHTML = "";
+            document.getElementById('ADDRESS_ELEMENTARY').innerHTML = "";
+            document.getElementById('ADDRESS_ELEMENTARY_2').innerHTML = "";
+            document.getElementById('ADDRESS_MIDDLE_SCHOOL').innerHTML = "";
+            document.getElementById('ADDRESS_MIDDLE_SCHOOL_2').innerHTML = "";
+            document.getElementById('ADDRESS_HIGH_SCHOOL').innerHTML = "";
+            document.getElementById('ADDRESS_HIGH_SCHOOL_2').innerHTML = "";
+
+            document.getElementById('Description_PROPERTY_TAG_LINE').innerHTML = "";
+            document.getElementById('Description_PROPERTY_DESCRIPTION').innerHTML = "";
+            document.getElementById('Description_YEAR_BUILT').innerHTML = "";
+            document.getElementById('Description_CONSTRUCTION_TYPE').innerHTML = "";
+            document.getElementById('Description_FOUNDATION_TYPE').innerHTML = "";
+            document.getElementById('Description_LOT_ACRES').innerHTML = "";
+            document.getElementById('Description_LOT_SQUARE_FOOTAGE').innerHTML = "";
+            document.getElementById('Description_LOT_DIMENTIONS').innerHTML = "";
+            document.getElementById('Description_ROOM_DIMENSIONS').innerHTML = "";
+            document.getElementById('Description_PARKING').innerHTML = "";
+            document.getElementById('Description_RV_BOAT_PARKING').innerHTML = "";
+            document.getElementById('Description_PARKING_MAINTENANCE').innerHTML = "";
+            document.getElementById('Description_TRASH').innerHTML = "";
+            document.getElementById('Description_HANDICAP_ACCESSIBLE').innerHTML = "";
+            document.getElementById('Description_RAMP').innerHTML = "";
+            document.getElementById('Description_ACCESSIBLE_ENTRANCE').innerHTML = "";
+            document.getElementById('Description_BATHROOM').innerHTML = "";
+            document.getElementById('Description_ELEVATOR').innerHTML = "";
+            document.getElementById('Description_HALLWAYS').innerHTML = "";
+            document.getElementById('Description_KITCHEN').innerHTML = "";
+            document.getElementById('Description_WATERFRONT').innerHTML = "";
+            document.getElementById('Description_WATER_ACCESS').innerHTML = "";
+            document.getElementById('Description_WATERVIEW').innerHTML = "";
+            document.getElementById('Description_COBRA_ZONE').innerHTML = "";
+            document.getElementById('Description_FEDERAL_FLOOD_INSURANCE_AVAILBLE').innerHTML = "";
+            document.getElementById('Description_PROPERTY_LOCATION').innerHTML = "";
+            document.getElementById('Description_FLOOD_ZONE_TYPE').innerHTML = "";
+            document.getElementById('Description_SQUARE_FOOTAGE_HEATED').innerHTML = "";
+            document.getElementById('Description_SQUARE_FOOTAGE_SEPARATE').innerHTML = "";
+            document.getElementById('Description_PROPERTY_LEVELS').innerHTML = "";
+            document.getElementById('Description_BASEMENT').innerHTML = "";
+            document.getElementById('Description_OF_ROOMS').innerHTML = "";
+            document.getElementById('Description_GARAGE').innerHTML = "";
+            document.getElementById('Description_CARPORT').innerHTML = "";
+            document.getElementById('Description_PORCH_BALCONY_DECK').innerHTML = "";
+            document.getElementById('Description_ROOF').innerHTML = "";
+            document.getElementById('Description_OF_FULL_BATHS').innerHTML = "";
+            document.getElementById('Description_OF_1_2_BATHS').innerHTML = "";
+            document.getElementById('Description_OF_BEDROOMS').innerHTML = "";
+            document.getElementById('Description_MASTER_BEDROOM_LOCATION').innerHTML = "";
+            document.getElementById('Description_PROPERTY_STORIES').innerHTML = "";
+            document.getElementById('Description_HEATING_SOURCE_1').innerHTML = "";
+            document.getElementById('Description_HEATING_SOURCE_2').innerHTML = "";
+            document.getElementById('Description_INTERIOR_HEATING_SOURCE').innerHTML = "";
+            document.getElementById('Description_INTERIOR_COOLING').innerHTML = "";
+            document.getElementById('Description_WATER').innerHTML = "";
+            document.getElementById('Description_SEWER').innerHTML = "";
+            document.getElementById('Description_ELECTRIC').innerHTML = "";
+            document.getElementById('Description_POOL_SPA').innerHTML = "";
+            document.getElementById('Description_PETS').innerHTML = "";
+            document.getElementById('Description_COMMUNITY_AMENITIES').innerHTML = "";
+            document.getElementById('Description_EXTERIOR_FEATURES').innerHTML = "";
+            document.getElementById('Description_EXTERIOR_FINISHES').innerHTML = "";
+            document.getElementById('Description_FENCING').innerHTML = "";
+            document.getElementById('Description_ATTIC_SPACE').innerHTML = "";
+            document.getElementById('Description_BOAT_SLIP').innerHTML = "";
+            document.getElementById('Description_MEAN_HIGH_WATER_DEPTH').innerHTML = "";
+            document.getElementById('Description_BUILDING_GREEN_CERTIFIED').innerHTML = "";
+            document.getElementById('Description_GREEN_BUILDING_FEATURES').innerHTML = "";
+
+            document.getElementById('Instruction_SHOWING_INSTRUCTIONS').innerHTML = "";
+            document.getElementById('listin_SELLER_OPT_OUT').innerHTML = "";
+            document.getElementById('listin_SELLER_OPT_IN').innerHTML = "";
+            document.getElementById('listin_OUTSIDE_DISTRIBUTION').innerHTML = "";
+
+            document.getElementById('Photo_EXTERIOR').innerHTML = "";
+            document.getElementById('Photo_INTERIOR').innerHTML = "";
+            document.getElementById('Document_PDF_s').innerHTML = "";
+        }
+
+        get_default_data();
+
+        function go_edit() {
+            localStorage.setItem("edit_my_properties_home_id", select_home_id);
+            localStorage.setItem("real_link_kind", select_home_kind);
+            localStorage.setItem("home_retail_regex_id", select_home_retail_regex_id);
+            window.location.href = "https://syohn.com/my-home-properties-detail-edit";
+        }
+
+
+        function edit_home() {
+            document.getElementById('edit_button_child_item_text').style.display = "none";
+            document.getElementById('save_button_child_item_text').style.display = "block";
+            d
+
+        }
+
+        function save_home() {
+            document.getElementById('edit_button_child_item_text').style.display = "block";
+            document.getElementById('save_button_child_item_text').style.display = "none";
+            get_default_data();
+        }
+
+        function draw_google_map(lat_value, long_value) {
+            const uluru = { lat: lat_value, lng: long_value };
+            // const uluru = { lat: 36.778259, lng: -119.417931 };
+            // The map, centered at Uluru
+            const map = new google.maps.Map(document.getElementById("googleMap"), {
+                zoom: 4,
+                center: uluru,
+            });
+            // The marker, positioned at Uluru
+            const marker = new google.maps.Marker({
+                position: uluru,
+                map: map,
+            });
+            // https://www.google.com/maps/place/100+Manning+Dr,+Chapel+Hill,+NC+27514/@35.905151,-79.0524843,17z/data=!4m5!3m4!1s0x89acc2efa4d7cfa9:0x47ba4eef0885a757!8m2!3d35.9052172!4d-79.0508267?hl=en-US
+        }
+
+        function getLocation() {
+            if (gps_location_link_flag == true) {
+                console.log(gps_location)
+                window.open(gps_location, '_blank', 'location=yes,height=570,width=520,scrollbars=yes,status=yes');
+            } else {
+                if ($("#get_geo_location_from_database_button").val() == "Show GPS Location") {
+                    $("#get_geo_location_from_database_button").val("Hide GPS Location");
+                    $("#get_geo_location_from_database").css("display", "block")
+                } else {
+                    $("#get_geo_location_from_database_button").val("Show GPS Location");
+                    $("#get_geo_location_from_database").css("display", "none")
+                }
+            }
+
+            console.log("getLocation")
+        }
+    </script>
+    <style>
+    
+        .edit_button_style {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .edit_button_child_item {
+            color: white;
+            background: #133c55;
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            width: 100px;
+            height: 35px;
+            font-size: 25px;
+            border-radius: 10px;
+            /* border-block-color: white; */
+            border: 0px;
+            cursor: pointer;
+        }
+
+        .text-style {
+            display: flex;
+            margin: 10px;
+            padding: 10px;
+            justify-content: end;
+        }
+
+        .home-description {
+            width: 50%;
+        }
+
+        .home-address {
+            margin-left: 25px;
+            font-size: 25px;
+            font-family: fantasy;
+            color: black;
+        }
+
+        .home-discover-image {
+            border-radius: 20px !important;
+            height: 100%;
+            width: 50%;
+        }
+
+        .home-discover-container-style {
+            display: flex;
+            margin: 10px;
+            height: 250px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .home-discover-container-style:hover {
+            box-shadow: gray 5px !important;
+            border-bottom-color: black;
+            border: 1px;
+            border-style: outset;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: Verdana, sans-serif;
+            margin: 0
+        }
+
+        .mySlides {
+            display: none
+        }
+
+        img {
+            vertical-align: middle;
+        }
+
+        /* Slideshow container */
+        .slideshow-container {
+            max-width: 1000px;
+            position: relative;
+            margin: auto;
+        }
+
+        .discover-image {
+            width: 100% !important;
+            height: 400px !important;
+            /* border-radius: 30px !important; */
+            border: 5px;
+            margin: auto;
+        }
+
+        .carousel-container-style {
+            margin-left: 80px;
+        }
+
+        .save-form-btn {
+            background: #133c55 !important;
+            color: white !important;
+        }
+
+        @media(max-width: 800px) {
+            .discover-image {
+                height: 200px !important;
+            }
+
+            .carousel-container-style {
+                margin-left: 0px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div>
+            <p id="home_owner_kind_text"></p>
+            <!-- <img id="home_discover_image" class="discover-image"> -->
+
+            <div class="carousel-container-style container ">
+                <!-- <h2>Carousel Example</h2> -->
+                <div id="myCarousel" class="carousel slide" data-ride="carousel">
+                    <!-- Indicators -->
+                    <!-- <ol class="carousel-indicators">
+                        <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                        <li data-target="#myCarousel" data-slide-to="1"></li>
+                        <li data-target="#myCarousel" data-slide-to="2"></li>
+                    </ol> -->
+
+                    <!-- Wrapper for slides -->
+                    <div class="carousel-inner" id="carousel_image_contanier">
+
+                    </div>
+
+                    <!-- Left and right controls -->
+                    <a class="left carousel-control" href="#myCarousel" data-slide="prev">
+                        <span class="glyphicon glyphicon-chevron-left"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="right carousel-control" href="#myCarousel" data-slide="next">
+                        <span class="glyphicon glyphicon-chevron-right"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="row" style="margin-top: 35px;margin-bottom: 15px;">
+
+                    <div class="col-md-6 col-sm-12 col-12">
+                        <div id="Top_title_home_price"> </div>
+                        <div id="Top_title_home_bed_numbers"> </div>
+                        <div id="home_address_text"> </div>
+                        <div>
+                            <input type='button' name="update" id="get_geo_location_from_database_button"
+                                value='Show GPS Location' class='save-form-btn button' onclick="getLocation()">
+                        </div>
+                        <div id="get_geo_location_from_database" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="col-md-6  col-sm-12 col-12">
+                        <div id="googleMap" style="width:100%;height:200px;"></div>
+                    </div>
+
+                    <div class="col-md-12  col-sm-12 col-12">
+
+                    </div>
+                </div>
+            </div>
+            <hr />
+
+            <!-- <p>$429,900</p>
+            <p>3bed  2bath  2,200sqft  3,920sqft lot</p>
+            <p>21 Caldwell, Pittsboro, NC, 27312</p> -->
+        </div>
+        <!-- <div id="home_discover_container_information_dfgfdg"></div> -->
+        <div class='edit_button_style'>
+            <!-- <button class='edit_button_child_item' id="edit_button_child_item_text" onclick="go_edit()">Edit</button> -->
+        </div>
+
+        <div>
+            <h1 style="text-align: center;"> PROPERTY INFORMATION</h1>
+            <hr />
+            <div id="information_checkbox_11_purchase_option"></div>
+            <hr />
+            <div id="Information_Buying_Agent_Commission"></div>
+            <hr />
+            <div id="Information_SELLER_REPRESENTATION"></div>
+            <hr />
+            <div id="Information_POSSESSION"></div>
+            <hr />
+            <div id="Information_AUCTION"></div>
+            <hr />
+            <div id="Information_STIPULATION_OF_SALE"></div>
+            <hr />
+            <div id="Information_HOME_WARRANTY"></div>
+            <hr />
+            <div id="Information_TERMITE_BOND"></div>
+            <hr />
+        </div>
+        <div class="section-sepeter"></div>
+
+        <div>
+            <h1 style="text-align: center;"> PROPERTY TYPE</h1>
+            <hr />
+            <div id="Type_PROPERTY_CATEGORY_1"></div>
+            <hr />
+            <div id="Type_PROPERTY_CATEGORY_2"></div>
+            <hr />
+            <div id="Type_LEGAL_TAXES"></div>
+            <hr />
+            <div id="Type_OWNER_OWNERS"></div>
+            <hr />
+            <div id="Type_Deed_Book"></div>
+            <hr />
+            <div id="Type_Broker_Owner"></div>
+            <hr />
+            <div id="Type_Deed_Page"></div>
+            <hr />
+            <div id="Type_PID"></div>
+            <hr />
+            <div id="Type_Plat_Book"></div>
+            <hr />
+            <div id="Type_Plat_Page"></div>
+            <hr />
+            <div id="Type_Land_Lot"></div>
+            <hr />
+            <div id="Type_Special_Assessment"></div>
+            <hr />
+            <div id="Type_Tax_Year"></div>
+            <hr />
+            <div id="Type_Zoning"></div>
+            <hr />
+            <div id="Type_TOTAL_REAL_ESTATE_PROPERTY_TAX"></div>
+            <hr />
+            <!-- <div id="Type_SALE_PRICE"></div>
+            <hr />
+            <div id="Type_LEASE_PRICE"></div>
+            <hr /> -->
+            <div id="Type_LEASE_GROSS_YEARLY_INCOME"></div>
+            <hr />
+        </div>
+        <div class="section-sepeter"></div>
+
+        <div>
+            <h1 style="text-align: center;"> PROPERTY ADDRESS</h1>
+            <hr />
+            <div id="ADDRESS_STREET_ADDRESS"></div>
+            <hr />
+            <div id="ADDRESS_UNIT"></div>
+            <hr />
+            <div id="ADDRESS_CITY"></div>
+            <hr />
+            <div id="ADDRESS_STATE"></div>
+            <hr />
+            <div id="ADDRESS_ZIP_CODE"></div>
+            <hr />
+            <div id="ADDRESS_COUNTRY"></div>
+            <hr />
+            <!-- <div id="ADDRESS_GEO_LAT"></div>
+            <hr />
+            <div id="ADDRESS_GEO_LONG"></div>
+            <hr /> -->
+            <div id="ADDRESS_CITY_LIMITS"></div>
+            <hr />
+            <div id="ADDRESS_HISTORIC_DISTRICT"></div>
+            <hr />
+            <div id="ADDRESS_SUBDIVISION"></div>
+            <hr />
+            <div id="ADDRESS_SECONDARY_SUBDIVISION"></div>
+            <hr />
+            <div id="ADDRESS_HOA"></div>
+            <hr />
+            <div id="ADDRESS_HOA_INITIATION_FEE"></div>
+            <hr />
+            <div id="ADDRESS_HOA_MONTHLY_FEE"></div>
+            <hr />
+            <!-- <div id="ADDRESS_SCHOOL_DISTRICT"></div> -->
+            <div id="ADDRESS_ELEMENTARY"></div>
+            <hr />
+            <div id="ADDRESS_ELEMENTARY_2"></div>
+            <hr />
+            <div id="ADDRESS_MIDDLE_SCHOOL"></div>
+            <hr />
+            <div id="ADDRESS_MIDDLE_SCHOOL_2"></div>
+            <hr />
+            <div id="ADDRESS_HIGH_SCHOOL"></div>
+            <hr />
+            <div id="ADDRESS_HIGH_SCHOOL_2"></div>
+            <hr />
+        </div>
+        <div class="section-sepeter"></div>
+
+        <div>
+            <h1 style="text-align: center;"> PROPERTY DESCRIPTION</h1>
+            <hr />
+            <div id="Description_PROPERTY_TAG_LINE"></div>
+            <hr />
+            <div id="Description_PROPERTY_DESCRIPTION"></div>
+            <hr />
+            <div id="Description_YEAR_BUILT"></div>
+            <hr />
+            <div id="Description_CONSTRUCTION_TYPE"></div>
+            <hr />
+            <div id="Description_FOUNDATION_TYPE"></div>
+            <hr />
+            <div id="Description_LOT_ACRES"></div>
+            <hr />
+            <div id="Description_LOT_SQUARE_FOOTAGE"></div>
+            <hr />
+            <div id="Description_LOT_DIMENTIONS"></div>
+            <hr />
+            <div id="Description_ROOM_DIMENSIONS"></div>
+            <hr />
+            <div id="Description_PARKING"></div>
+            <hr />
+            <div id="Description_RV_BOAT_PARKING"></div>
+            <hr />
+            <div id="Description_PARKING_MAINTENANCE"></div>
+            <hr />
+            <div id="Description_TRASH"></div>
+            <hr />
+            <div id="Description_HANDICAP_ACCESSIBLE"></div>
+            <hr />
+            <div id="Description_RAMP"></div>
+            <hr />
+            <div id="Description_ACCESSIBLE_ENTRANCE"></div>
+            <hr />
+            <div id="Description_BATHROOM"></div>
+            <hr />
+            <div id="Description_ELEVATOR"></div>
+            <hr />
+            <div id="Description_HALLWAYS"></div>
+            <hr />
+            <div id="Description_KITCHEN"></div>
+            <hr />
+            <div id="Description_WATERFRONT"></div>
+            <hr />
+            <div id="Description_WATER_ACCESS"></div>
+            <hr />
+            <div id="Description_WATERVIEW"></div>
+            <hr />
+            <div id="Description_COBRA_ZONE"></div>
+            <hr />
+            <div id="Description_FEDERAL_FLOOD_INSURANCE_AVAILBLE"></div>
+            <hr />
+            <div id="Description_PROPERTY_LOCATION"></div>
+            <hr />
+            <div id="Description_FLOOD_ZONE_TYPE"></div>
+            <hr />
+            <div id="Description_SQUARE_FOOTAGE_HEATED"></div>
+            <hr />
+            <div id="Description_SQUARE_FOOTAGE_SEPARATE"></div>
+            <hr />
+            <div id="Description_PROPERTY_LEVELS"></div>
+            <hr />
+            <div id="Description_BASEMENT"></div>
+            <hr />
+            <div id="Description_OF_ROOMS"></div>
+            <hr />
+            <div id="Description_GARAGE"></div>
+            <hr />
+            <div id="Description_CARPORT"></div>
+            <hr />
+            <div id="Description_PORCH_BALCONY_DECK"></div>
+            <hr />
+            <div id="Description_ROOF"></div>
+            <hr />
+            <div id="Description_OF_FULL_BATHS"></div>
+            <hr />
+            <div id="Description_OF_1_2_BATHS"></div>
+            <hr />
+            <div id="Description_OF_BEDROOMS"></div>
+            <hr />
+            <div id="Description_MASTER_BEDROOM_LOCATION"></div>
+            <hr />
+            <div id="Description_PROPERTY_STORIES"></div>
+            <hr />
+            <div id="Description_HEATING_SOURCE_1"></div>
+            <hr />
+            <div id="Description_HEATING_SOURCE_2"></div>
+            <hr />
+            <div id="Description_INTERIOR_HEATING_SOURCE"></div>
+            <hr />
+            <div id="Description_INTERIOR_COOLING"></div>
+            <hr />
+            <div id="Description_WATER"></div>
+            <hr />
+            <div id="Description_SEWER"></div>
+            <hr />
+            <div id="Description_ELECTRIC"></div>
+            <hr />
+            <div id="Description_POOL_SPA"></div>
+            <hr />
+            <div id="Description_PETS"></div>
+            <hr />
+            <div id="Description_COMMUNITY_AMENITIES"></div>
+            <hr />
+            <div id="Description_EXTERIOR_FEATURES"></div>
+            <hr />
+            <div id="Description_EXTERIOR_FINISHES"></div>
+            <hr />
+            <div id="Description_FENCING"></div>
+            <hr />
+            <div id="Description_ATTIC_SPACE"></div>
+            <hr />
+            <div id="Description_BOAT_SLIP"></div>
+            <hr />
+            <div id="Description_MEAN_HIGH_WATER_DEPTH"></div>
+            <hr />
+            <div id="Description_BUILDING_GREEN_CERTIFIED"></div>
+            <hr />
+            <div id="Description_GREEN_BUILDING_FEATURES"></div>
+            <hr />
+        </div>
+        <div class="section-sepeter"></div>
+
+        <div>
+            <h1 style="text-align: center;"> SHOWING INSTRUCTIONS</h1>
+            <hr />
+            <div id="Instruction_SHOWING_INSTRUCTIONS"></div>
+            <hr />
+        </div>
+        <div class="section-sepeter"></div>
+
+        <div>
+            <h1 style="text-align: center;"> LISTING DISTRIBUTION</h1>
+            <hr />
+            <div id="listin_SELLER_OPT_OUT"></div>
+            <hr />
+            <div id="listin_SELLER_OPT_IN"></div>
+            <hr />
+            <div id="listin_OUTSIDE_DISTRIBUTION"></div>
+            <hr />
+        </div>
+        <div class="section-sepeter"></div>
+
+        <div>
+            <h1 style="text-align: center;"> LISTING DOCUMENTS</h1>
+            <hr />
+            <div class="file-viewer">
+                
+            </div>
+            
+            <hr />
+        </div>
+        <div class="section-sepeter"></div>
+    </div>
+</body>
+
+</html>
