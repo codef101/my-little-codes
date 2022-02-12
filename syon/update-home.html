@@ -9002,46 +9002,29 @@
 
       <div id="photo_upload" class="tabcontent" style="padding: 25px">
         <textarea id="Photo_EXTERIOR" disabled></textarea>
+        <input type="hidden" name="dropdown_file_kind" value="file_upload_EXTERIOR_LANDSCAPING">
+        <div class="second-radio">
+          <input
+            type="radio"
+            class="check_file"
+            id="image_file"
+            name="file_type"
+            value="image"
+            checked
+          />
+          <label for="Type_checkbox_11">Image</label>
+        </div>
 
-        <select id="dropdown_file_kind" name="dropdown_file_kind">
-          <option value="file_upload_EXTERIOR_LANDSCAPING" selected>
-            LANDSCAPING
-          </option>
-          <option value="file_upload_EXTERIOR_HOUSE">EXTERIOR HOUSE</option>
-          <option value="file_upload_EXTERIOR_POOL">POOL</option>
-          <option value="file_upload_EXTERIOR_SHED">SHED</option>
-          <option value="file_upload_EXTERIOR_OTHER">OTHER</option>
-          <option value="INTERIOR">
-            <span style="color: red">INTERIOR</span>
-          </option>
-          <option value="file_upload_INTERIOR_GARAGE">GARAGE</option>
-          <option value="file_upload_INTERIOR_MUD_ROOM">MUD ROOM</option>
-          <option value="file_upload_INTERIOR_LIVING_ROOM">LIVING ROOM</option>
-          <option value="file_upload_INTERIOR_DINING_ROOM">DINING ROOM</option>
-          <option value="file_upload_INTERIOR_FAMILY_ROOM">FAMILY ROOM</option>
-          <option value="file_upload_INTERIOR_MEDIA_ROOM">MEDIA ROOM</option>
-          <option value="file_upload_INTERIOR_BASEMENT_ROOM">BASEMENT</option>
-          <option value="file_upload_INTERIOR_KITCHEN_ROOM">KITCHEN</option>
-          <option value="file_upload_INTERIOR_PANTRY_ROOM">PANTRY</option>
-          <option value="file_upload_INTERIOR_HALF_BATH">HALF BATH</option>
-          <option value="file_upload_INTERIOR_OFFICE">OFFICE</option>
-          <option value="file_upload_INTERIOR_BEDROOMS">BEDROOMS</option>
-          <option value="file_upload_INTERIOR_BATHROOMS">BATHROOMS</option>
-          <option value="file_upload_INTERIOR_MASTER_BEDROOM">
-            MASTER BEDROOM
-          </option>
-          <option value="file_upload_INTERIOR_MASTER_BATHROOM">
-            MASTER BATHROOM
-          </option>
-          <option value="file_upload_INTERIOR_MASTER_CLOSET">
-            MASTER CLOSET
-          </option>
-          <option value="file_upload_INTERIOR_OTHER">OTHER</option>
-          <option value="PDF DOCUMENTS UPLOAD" disabled>
-            <span style="color: red">PDF DOCUMENTS UPLOAD</span>
-          </option>
-          <option value="file_upload_PDF_DOCUMENTS_UPLOAD">PDF's</option>
-        </select>
+        <div class="second-radio">
+          <input
+            type="radio"
+            class="check_file"
+            id="pdf_file"
+            name="file_type"
+            value="pdf"
+          />
+          <label for="Type_checkbox_12">Pdf</label>
+        </div>
         <div id="inputfield">
           <br /><br />
           <!-- <h4>LANDSCAPING </h4> -->
@@ -9065,7 +9048,7 @@
           />
           <!-- <label class="custom-file-label" for="customFile">Choose file</label> -->
         </div>
-        <div class="gallery" style="height: auto; width: 100%;display: flex;">
+        <div class="gallery" style="height: auto; width: 100%;display: flex;flex-wrap: wrap;">
           <img
             src="" 
             alt="Image"
@@ -9085,15 +9068,16 @@
     </form>
 
     <script type="text/javascript">
-      $('#dropdown_file_kind').on('change', function() {
-        if(this.value == 'file_upload_PDF_DOCUMENTS_UPLOAD'){
-          $('#input_images').css("display","none");
-          $('#input_pdf').css("display","block");
-        }else {
-          $('#input_images').css("display","block");
-          $('#input_pdf').css("display","none");
-        }
-      })
+      $(".check_file").on('change',function(){
+          if( $('#pdf_file').is(":checked") ) {
+            $('#input_images').css("display","none");
+            $('#input_pdf').css("display","block");
+          }
+          if( $('#image_file').is(":checked") ) {
+            $('#input_images').css("display","block");
+            $('#input_pdf').css("display","none");
+          }
+      });
       var file = "";
       function getFileType(file) {
         if (file.type.match("image.*")) return "image";

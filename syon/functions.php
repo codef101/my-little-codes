@@ -833,48 +833,61 @@ function update_uploaded_home_information_to_database($request)
         array('%d')
     );
     add_filter('upload_dir', 'home_retail_image_dir');
-    if (!empty($_FILES['upload_home_file']['name'][0])) {
-        $date = new DateTime();
-        $file_names = array();//string of filenames
-        //loop files & upload
-        for ($i=0; $i < count($_FILES['upload_home_file']['name']); $i++) { 
-            $ext = end((explode(".", $_FILES['upload_home_file']['name'][$i])));
-            $new_name = "added_" . uniqid() . $date->getTimestamp() . "." . $ext;
-            array_push($file_names, $new_name);
-            wp_upload_bits($new_name, null, file_get_contents($_FILES['upload_home_file']['tmp_name'][$i]));
+    /**
+     * Loop the files global var
+     * check name
+     * check for errors
+     * upload
+     * update links on db
+     */
+    $names = $_FILES['upload_home_file']['name'];
+    $errors = $_FILES['upload_home_file']['error'];
+    $tmp_name = $_FILES['upload_home_file']['tmp_name'];
+    foreach ($names as $key => $name) {
+        // check error
+        if($errors[$key]){
+            continue;
         }
-        $my_custom_filename = implode(',', $file_names);
+        $date = new DateTime();
+        $ext = end((explode(".", $name)));
+        $new_name = "added_" . uniqid() . $date->getTimestamp() . "." . $ext;
+        wp_upload_bits($new_name, null, file_get_contents($tmp_name[$key]));
         $table_name_home_retail_photo_upload = $wpdb->prefix . '_home_retail_photo_upload';
         $rows = $wpdb->get_results("SELECT * FROM `$table_name_home_retail_photo_upload` WHERE home_retail_regex_id='$regax_id'");
         $get_home_id = (int)$rows[0]->home_id;
-        //append existing
+        // append existing
         if ($rows[0]->{$database_key} != ''){
-            $my_custom_filename = $rows[0]->{$database_key}.",".$my_custom_filename;
+            $new_name = $rows[0]->{$database_key}.",".$new_name;
         }
+        print_r($new_name);
         $database_key = $request['dropdown_file_kind'];
-        $wpdb->query($wpdb->prepare("UPDATE `$table_name_home_retail_photo_upload` SET `$database_key` = '$my_custom_filename' WHERE `$table_name_home_retail_photo_upload`.`home_id` = $get_home_id;"));
-        $wpdb->query($wpdb->prepare("UPDATE `$table_name_home_retail_photo_upload` SET `file_upload_EXTERIOR_LANDSCAPING` = '$my_custom_filename' WHERE `$table_name_home_retail_photo_upload`.`home_id` = $get_home_id;"));
+        $wpdb->query($wpdb->prepare("UPDATE `$table_name_home_retail_photo_upload` SET `file_upload_EXTERIOR_LANDSCAPING` = '$new_name' WHERE `$table_name_home_retail_photo_upload`.`home_id` = $get_home_id;"));
     }
-    if (!empty($_FILES['upload_home_pdf']['name'][0])) {
-        $date = new DateTime();
-        $file_names = array();
-        //loop files & upload
-        for ($i=0; $i < count($_FILES['upload_home_pdf']['name']); $i++) { 
-            $ext = end((explode(".", $_FILES['upload_home_pdf']['name'][$i])));
-            $new_name = "added_" . uniqid() . $date->getTimestamp() . "." . $ext;
-            array_push($file_names, $new_name);
-            wp_upload_bits($new_name, null, file_get_contents($_FILES['upload_home_pdf']['tmp_name'][$i]));
+    $names_pdf = $_FILES['upload_home_pdf']['name'];
+    $errors_pdf = $_FILES['upload_home_pdf']['error'];
+    $tmp_name_pdf = $_FILES['upload_home_pdf']['tmp_name'];
+    foreach ($names_pdf as $key_pdf => $name_pdf) {
+        // check error
+        if($errors_pdf[$key_pdf]){
+            continue;
         }
-        $my_custom_filename = implode(',', $file_names);
+        $date = new DateTime();
+        $ext = end((explode(".", $name_pdf)));
+        $new_name_pdf = "added_" . uniqid() . $date->getTimestamp() . "." . $ext;
+        wp_upload_bits($new_name_pdf, null, file_get_contents($tmp_name_pdf[$key_pdf]));
         $table_name_home_retail_photo_upload = $wpdb->prefix . '_home_retail_photo_upload';
         $rows = $wpdb->get_results("SELECT * FROM `$table_name_home_retail_photo_upload` WHERE home_retail_regex_id='$regax_id'");
         $get_home_id = (int)$rows[0]->home_id;
+        // append existing
         if ($rows[0]->{$database_key} != ''){
-            $my_custom_filename = $rows[0]->{$database_key}.",".$my_custom_filename;
+            $new_name_pdf = $rows[0]->{$database_key}.",".$new_name_pdf;
         }
-        $wpdb->query($wpdb->prepare("UPDATE `$table_name_home_retail_photo_upload` SET `$database_key` = '$my_custom_filename' WHERE `$table_name_home_retail_photo_upload`.`home_id` = $get_home_id;"));
-        $wpdb->query($wpdb->prepare("UPDATE `$table_name_home_retail_photo_upload` SET `file_upload_EXTERIOR_LANDSCAPING` = '$my_custom_filename' WHERE `$table_name_home_retail_photo_upload`.`home_id` = $get_home_id;"));
+        print_r($new_name_pdf);
+        $database_key = $request['dropdown_file_kind'];
+        $wpdb->query($wpdb->prepare("UPDATE `$table_name_home_retail_photo_upload` SET `$database_key` = '$new_name_pdf' WHERE `$table_name_home_retail_photo_upload`.`home_id` = $get_home_id;"));
+        $wpdb->query($wpdb->prepare("UPDATE `$table_name_home_retail_photo_upload` SET `file_upload_EXTERIOR_LANDSCAPING` = '$new_name_pdf' WHERE `$table_name_home_retail_photo_upload`.`home_id` = $get_home_id;"));
     }
+    exit();
     header("Location: https://syohn.com/my-properties");
     exit();
 }
