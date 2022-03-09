@@ -1,0 +1,90 @@
+<script>
+jQuery(document).ready(function(){
+        jQuery('body').find('.elementor-2403').css('display','none');
+        jQuery('body').find('.elementor-2400').css('display','none');
+        jQuery('body').find('.elementor-2407').css('display','none');
+        jQuery('body').find('.elementor-6635').css('display','none');
+        jQuery('body').find('.1st-member').addClass('active-acc');
+       // Hover IST
+        jQuery('.1st-member').hover(function(){
+           // jQuery('body').find('.elementor-157').css('display','block');
+            jQuery('body').find('.elementor-157').fadeIn('slow');
+
+            jQuery('body').find(this).addClass('active-acc');       
+      jQuery('body').find('.2nd-member').removeClass('active-acc');    
+      jQuery('body').find('.3rd-member').removeClass('active-acc');     
+      jQuery('body').find('.4th-member').removeClass('active-acc');  
+      jQuery('body').find('.5th-member').removeClass('active-acc');        
+           jQuery(this).parent().addClass('elementor-active');        
+   jQuery('body').find('.elementor-2403').css('display','none');     
+   jQuery('body').find('.elementor-2400').css('display','none');   
+   jQuery('body').find('.elementor-2407').css('display','none');
+   jQuery('body').find('.elementor-6635').css('display','none');
+       });
+       // Hover 2ND   
+    jQuery('.2nd-member').hover(function(){
+         jQuery('body').find('.elementor-2403').fadeIn('slow');
+          // addClass    
+       jQuery('body').find(this).addClass('active-acc');
+           jQuery('body').find('.1st-member').removeClass('active-acc');
+           jQuery('body').find('.3rd-member').removeClass('active-acc');
+           jQuery('body').find('.4th-member').removeClass('active-acc');
+           jQuery('body').find('.5th-member').removeClass('active-acc'); 
+           jQuery(this).parent().addClass('elementor-active'); 
+           jQuery(this).parent().addClass('elementor-active');
+           jQuery('body').find('.elementor-2400').css('display','none');
+           jQuery('body').find('.elementor-157').css('display','none');
+           jQuery('body').find('.elementor-2407').css('display','none');
+           jQuery('body').find('.elementor-6635').css('display','none');
+
+  });
+       // Hover 3RD
+        jQuery('.3rd-member').hover(function(){
+        jQuery('body').find('.elementor-2400').fadeIn('slow');
+          // addClass
+           jQuery('body').find(this).addClass('active-acc');
+            jQuery('body').find('.1st-member').removeClass('active-acc');
+           jQuery('body').find('.2nd-member').removeClass('active-acc');
+           jQuery('body').find('.4th-member').removeClass('active-acc');
+           jQuery('body').find('.5th-member').removeClass('active-acc');
+           jQuery(this).parent().addClass('elementor-active'); 
+           jQuery('body').find('.elementor-2403').css('display','none');
+           jQuery('body').find('.elementor-157').css('display','none');
+           jQuery('body').find('.elementor-2407').css('display','none');
+           jQuery('body').find('.elementor-6635').css('display','none');
+        });
+        // Hover 4TH 
+ jQuery('.4th-member').hover(function(){            
+jQuery('body').find('.elementor-2407').fadeIn('slow');
+        // addClass
+             jQuery('body').find(this).addClass('active-acc');
+            jQuery('body').find('.1st-member').removeClass('active-acc');
+            jQuery('body').find('.2nd-member').removeClass('active-acc');
+            jQuery('body').find('.3rd-member').removeClass('active-acc');
+            jQuery('body').find('.5th-member').removeClass('active-acc');
+           jQuery(this).parent().addClass('elementor-active'); 
+            jQuery('body').find('.elementor-2403').css('display','none');
+            jQuery('body').find('.elementor-157').css('display','none');
+            jQuery('body').find('.elementor-2400').css('display','none');
+            jQuery('body').find('.elementor-6635').css('display','none');
+  });
+	// Hover 5TH
+ jQuery('.5th-member').hover(function(){            
+jQuery('body').find('.elementor-6635').fadeIn('slow');
+        // addClass
+             jQuery('body').find(this).addClass('active-acc');
+            jQuery('body').find('.1st-member').removeClass('active-acc');
+            jQuery('body').find('.2nd-member').removeClass('active-acc');
+            jQuery('body').find('.3rd-member').removeClass('active-acc');            
+            jQuery('body').find('.4th-member').removeClass('active-acc');
+           jQuery(this).parent().addClass('elementor-active'); 
+            jQuery('body').find('.elementor-2403').css('display','none');
+            jQuery('body').find('.elementor-157').css('display','none');
+            jQuery('body').find('.elementor-2400').css('display','none');
+	    jQuery('body').find('.elementor-2407').css('display','none');	
+  });
+
+   });
+
+
+</script>
